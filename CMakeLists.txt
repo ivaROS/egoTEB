@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   visualization_msgs
+  pips_dwa_implementation
 )
 message(STATUS "System: ${CMAKE_SYSTEM}")
 ## System dependencies are found with CMake's conventions
@@ -192,7 +193,7 @@ add_library(teb_local_planner
 # Dynamic reconfigure: make sure configure headers are built before any node using them
 add_dependencies(teb_local_planner ${PROJECT_NAME}_gencfg)
 # Generate messages before compiling the lib
-add_dependencies(teb_local_planner ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(teb_local_planner ${PROJECT_NAME}_generate_messages_cpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(teb_local_planner
    ${EXTERNAL_LIBS}

@@ -43,6 +43,8 @@
   <depend>tf</depend>
   <depend>tf_conversions</depend>
   <depend>visualization_msgs</depend>
+  
+  <depend>pips_dwa_implementation</depend>
 
   <export>
     <nav_core plugin="${prefix}/teb_local_planner_plugin.xml"/>

@@ -80,6 +80,9 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
+// custom additions
+#include <pips_dwa_controller/ego_circle_cost_wrapper.h>
+
 
 namespace teb_local_planner
 {
@@ -207,6 +210,9 @@ protected:
    */
   void updateObstacleContainerWithCustomObstacles();
 
+  void updateObstacleContainerWithEgocircle(const ros::Time stamp);
+  
+  
 
   /**
    * @brief Update internal via-point container based on the current reference plan
@@ -397,6 +403,8 @@ private:
   
   std::string global_frame_; //!< The frame in which the controller will run
   std::string robot_base_frame_; //!< Used as the base frame id of the robot
+  
+  std::shared_ptr<ego_circle::EgoCircleCostWrapper> egocircle_wrapper_;
     
   // flags
   bool initialized_; //!< Keeps track about the correct initialization of this class

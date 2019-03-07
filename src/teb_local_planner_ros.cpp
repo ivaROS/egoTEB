@@ -53,7 +53,6 @@
 #include "g2o/solvers/csparse/linear_solver_csparse.h"
 #include "g2o/solvers/cholmod/linear_solver_cholmod.h"
 
-
 // register this planner as a BaseLocalPlanner plugin
 PLUGINLIB_EXPORT_CLASS(teb_local_planner::TebLocalPlannerROS, nav_core::BaseLocalPlanner)
 
@@ -173,6 +172,10 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     double controller_frequency = 5;
     nh_move_base.param("controller_frequency", controller_frequency, controller_frequency);
     failure_detector_.setBufferLength(std::round(cfg_.recovery.oscillation_filter_duration*controller_frequency));
+    
+    //ros::NodeHandle pnh("~");
+    egocircle_wrapper_ = std::make_shared<ego_circle::EgoCircleCostWrapper>(nh, nh);
+    egocircle_wrapper_->init();
     
     // set initialized flag
     initialized_ = true;
@@ -316,6 +319,7 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // also consider custom obstacles (must be called after other updates, since the container is not cleared)
   updateObstacleContainerWithCustomObstacles();
   
+  updateObstacleContainerWithEgocircle(tf_plan_to_global.stamp_);
     
   // Do not allow config changes during the following optimization step
   boost::mutex::scoped_lock cfg_lock(cfg_.configMutex());
@@ -569,6 +573,41 @@ void TebLocalPlannerROS::updateObstacleContainerWithCustomObstacles()
       // Set velocity, if obstacle is moving
       if(!obstacles_.empty())
         obstacles_.back()->setCentroidVelocity(custom_obstacle_msg_.obstacles[i].velocities, custom_obstacle_msg_.obstacles[i].orientation);
+    }
+  }
+}
+
+void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time stamp) //(const tf::Stamped<tf::Pose>& global_pose)
+{
+  //if (cfg_.obstacles.include_egocircle_obstacles)
+  if(true)
+  {  
+    Eigen::Vector2d robot_orient = robot_pose_.orientationUnitVec();
+    egocircle_wrapper_->update();
+    std_msgs::Header header;
+    header.stamp = stamp;
+    header.frame_id = global_frame_; //global_pose.frame_id_;
+    ROS_INFO_STREAM("Header: " << header.frame_id << ", " << header.stamp);
+    
+    if(egocircle_wrapper_->isReady(header))
+    {
+      std::vector<ego_circle::EgoCircularPoint> points = egocircle_wrapper_->getImpl()->getLocalEgoCircularPoints();
+      
+      for(auto point : points)
+      {
+            Eigen::Vector2d obs;
+            obs.coeffRef(0) = point.x;
+            obs.coeffRef(1) = point.y;
+  //           costmap_->mapToWorld(i,j,obs.coeffRef(0), obs.coeffRef(1));
+  //           
+  //           // check if obstacle is interesting (e.g. not far behind the robot)
+  //           Eigen::Vector2d obs_dir = obs-robot_pose_.position();
+  //           if ( obs_dir.dot(robot_orient) < 0 && obs_dir.norm() > cfg_.obstacles.costmap_obstacles_behind_robot_dist  )
+  //             continue;
+            
+            obstacles_.push_back(ObstaclePtr(new PointObstacle(obs)));
+
+      }
     }
   }
 }
