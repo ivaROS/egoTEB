@@ -117,6 +117,7 @@ public:
     double dynamic_obstacle_inflation_dist; //!< Buffer zone around predicted locations of dynamic obstacles with non-zero penalty costs (should be larger than min_obstacle_dist in order to take effect)
     bool include_dynamic_obstacles; //!< Specify whether the movement of dynamic obstacles should be predicted by a constant velocity model (this also effects homotopy class planning); If false, all obstacles are considered to be static.
     bool include_costmap_obstacles; //!< Specify whether the obstacles in the costmap should be taken into account directly
+    bool include_egocircle_obstacles; //!< Specify whether obstacles should be included from the egocircle
     double costmap_obstacles_behind_robot_dist; //!< Limit the occupied local costmap obstacles taken into account for planning behind the robot (specify distance in meters)
     int obstacle_poses_affected; //!< The obstacle position is attached to the closest pose on the trajectory to reduce computational effort, but take a number of neighbors into account as well
     bool legacy_obstacle_association; //!< If true, the old association strategy is used (for each obstacle, find the nearest TEB pose), otherwise the new one (for each teb pose, find only "relevant" obstacles).
@@ -265,6 +266,7 @@ public:
     obstacles.dynamic_obstacle_inflation_dist = 0.6;
     obstacles.include_dynamic_obstacles = true;
     obstacles.include_costmap_obstacles = true;
+    obstacles.include_egocircle_obstacles = true;
     obstacles.costmap_obstacles_behind_robot_dist = 1.5;
     obstacles.obstacle_poses_affected = 25;
     obstacles.legacy_obstacle_association = false;

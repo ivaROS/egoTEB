@@ -1241,6 +1241,69 @@ bool TebOptimalPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel* c
   return true;
 }
 
+bool TebOptimalPlanner::isTrajectoryFeasible(const ego_circle::EgoCircleCostImpl& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+                                             double inscribed_radius, double circumscribed_radius, int look_ahead_idx)
+{
+  if (look_ahead_idx < 0 || look_ahead_idx >= teb().sizePoses())
+    look_ahead_idx = teb().sizePoses() - 1;
+  
+  for (int i=0; i <= look_ahead_idx; ++i)
+  {           
+    //if ( costmap_model->footprintCost(teb().Pose(i).x(), teb().Pose(i).y(), teb().Pose(i).theta(), footprint_spec, inscribed_radius, circumscribed_radius) < 0 )
+    //  return false;
+    
+    ego_circle::EgoCircularPoint ec_point(teb().Pose(i).x(), teb().Pose(i).y());
+    float min_dist = ego_costs_.getMinDist(ec_point);
+    
+    ROS_INFO_STREAM("[" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
+    
+    if(min_dist < inscribed_radius)
+    {
+      ROS_WARN("Too close: trajectory is infeasible.");
+      return false;
+    }
+    
+    // check if distance between two poses is higher than the robot radius and interpolate in that case
+    // (if obstacles are pushing two consecutive poses away, the center between two consecutive poses might coincide with the obstacle ;-)!
+    if (i<look_ahead_idx)
+    {
+      double dist = (teb().Pose(i+1).position()-teb().Pose(i).position()).norm();
+      int num_interpolations = dist/inscribed_radius;
+      if(num_interpolations>0)
+      {
+        PoseSE2 a = teb().Pose(i);
+        PoseSE2 b = teb().Pose(i+1);
+        PoseSE2 diff = (b-a);
+        diff.scale(1.0/(num_interpolations+1));
+        
+        PoseSE2 interp_pose = a;
+        //for(int j = 0; j < num_interpolations; ++j)
+        if ( (teb().Pose(i+1).position()-teb().Pose(i).position()).norm() > inscribed_radius)
+        {
+          interp_pose+=diff;
+          // check one more time
+          PoseSE2 center = PoseSE2::average(teb().Pose(i), teb().Pose(i+1));
+          //if ( costmap_model->footprintCost(center.x(), center.y(), center.theta(), footprint_spec, inscribed_radius, circumscribed_radius) < 0 )
+          //  return false;
+          ego_circle::EgoCircularPoint ec_point(center.x(), center.y());
+          float min_dist = ego_costs_.getMinDist(ec_point);
+          ROS_INFO_STREAM("Next point too far away; testing another pose [" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
+          
+          
+          if(min_dist < inscribed_radius)
+          {
+            ROS_WARN("Too close: trajectory is infeasible.");
+            return false;
+          }
+        }
+        
+      }
+      
+    }
+  }
+  return true;
+}
+
 
 bool TebOptimalPlanner::isHorizonReductionAppropriate(const std::vector<geometry_msgs::PoseStamped>& initial_plan) const
 {

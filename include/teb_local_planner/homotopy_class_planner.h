@@ -222,7 +222,9 @@ public:
    */
   virtual bool isTrajectoryFeasible(base_local_planner::CostmapModel* costmap_model, const std::vector<geometry_msgs::Point>& footprint_spec,
                                     double inscribed_radius = 0.0, double circumscribed_radius=0.0, int look_ahead_idx=-1);
-
+  
+  virtual bool isTrajectoryFeasible(const ego_circle::EgoCircleCostImpl& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+                                    double inscribed_radius=0, double circumscribed_radius=0, int look_ahead_idx=-1);
   //@}
 
   /** @name Visualization */

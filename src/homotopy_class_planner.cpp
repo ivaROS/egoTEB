@@ -661,6 +661,16 @@ bool HomotopyClassPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel
   return best->isTrajectoryFeasible(costmap_model,footprint_spec, inscribed_radius, circumscribed_radius, look_ahead_idx);
 }
 
+bool HomotopyClassPlanner::isTrajectoryFeasible(const ego_circle::EgoCircleCostImpl& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+                                                double inscribed_radius, double circumscribed_radius, int look_ahead_idx)
+{
+  TebOptimalPlannerPtr best = bestTeb();
+  if (!best)
+    return false;
+  
+  return best->isTrajectoryFeasible(ego_costs_,footprint_spec, inscribed_radius, circumscribed_radius, look_ahead_idx);
+}
+
 void HomotopyClassPlanner::setPreferredTurningDir(RotType dir)
 {
   // set preferred turning dir for all TEBs
