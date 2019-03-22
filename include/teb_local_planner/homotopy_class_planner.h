@@ -124,7 +124,7 @@ public:
    * @param via_points Container storing via-points (optional)
    */
   HomotopyClassPlanner(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                       TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL);
+                       TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle=nullptr);
 
   /**
    * @brief Destruct the HomotopyClassPlanner.
@@ -140,7 +140,7 @@ public:
    * @param via_points Container storing via-points (optional)
    */
   void initialize(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                  TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL);
+                  TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle=nullptr);
 
 
 

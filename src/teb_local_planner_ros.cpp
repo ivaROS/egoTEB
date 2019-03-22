@@ -100,17 +100,7 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     // create robot footprint/contour model for optimization
     RobotFootprintModelPtr robot_model = getRobotFootprintFromParamServer(nh);
     
-    // create the planner instance
-    if (cfg_.hcp.enable_homotopy_class_planning)
-    {
-      planner_ = PlannerInterfacePtr(new HomotopyClassPlanner(cfg_, &obstacles_, robot_model, visualization_, &via_points_));
-      ROS_INFO("Parallel planning in distinctive topologies enabled.");
-    }
-    else
-    {
-      planner_ = PlannerInterfacePtr(new TebOptimalPlanner(cfg_, &obstacles_, robot_model, visualization_, &via_points_));
-      ROS_INFO("Parallel planning in distinctive topologies disabled.");
-    }
+
     
     // init other variables
     tf_ = tf;
@@ -164,6 +154,18 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     dynamic_recfg_ = boost::make_shared< dynamic_reconfigure::Server<TebLocalPlannerReconfigureConfig> >(nh);
     dynamic_reconfigure::Server<TebLocalPlannerReconfigureConfig>::CallbackType cb = boost::bind(&TebLocalPlannerROS::reconfigureCB, this, _1, _2);
     dynamic_recfg_->setCallback(cb);
+    
+    // create the planner instance
+    if (cfg_.hcp.enable_homotopy_class_planning)
+    {
+      planner_ = PlannerInterfacePtr(new HomotopyClassPlanner(cfg_, &obstacles_, robot_model, visualization_, &via_points_, egocircle_wrapper_->getImpl()));
+      ROS_INFO("Parallel planning in distinctive topologies enabled.");
+    }
+    else
+    {
+      planner_ = PlannerInterfacePtr(new TebOptimalPlanner(cfg_, &obstacles_, robot_model, visualization_, &via_points_));
+      ROS_INFO("Parallel planning in distinctive topologies disabled.");
+    }
     
     // validate optimization footprint and costmap footprint
     validateFootprints(robot_model->getInscribedRadius(), robot_inscribed_radius_, cfg_.obstacles.min_obstacle_dist);
@@ -607,6 +609,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
   if (cfg_.obstacles.include_egocircle_obstacles)
   //if(true)
   {  
+    const auto& egocircle = *egocircle_wrapper_->getImpl();
     Eigen::Vector2d robot_orient = robot_pose_.orientationUnitVec();
     egocircle_wrapper_->update();
     std_msgs::Header target_header;
@@ -617,31 +620,32 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
     if(egocircle_wrapper_->isReady(target_header))
     {
       egocircle_wrapper_->setInflationRadius(robot_inscribed_radius_);
-      std::vector<ego_circle::EgoCircularPoint> points = egocircle_wrapper_->getImpl()->getDecimatedEgoCircularPoints();//getLocalEgoCircularPoints();
+      std::vector<ego_circle::EgoCircularPoint> points = egocircle.getDecimatedEgoCircularPoints();//getLocalEgoCircularPoints();
+      egocircle.transformToGlobal(points);
       
-      Eigen::Affine3d obstacle_to_map_eig;
-      try 
-      {
-        std_msgs::Header source_header = egocircle_wrapper_->getCurrentHeader();
-        
-        tf::StampedTransform obstacle_to_map;
-        tf_->waitForTransform(target_header.frame_id, target_header.stamp,
-                              source_header.frame_id, source_header.stamp,
-                              target_header.frame_id, ros::Duration(0.5));
-        tf_->lookupTransform(target_header.frame_id, target_header.stamp,
-                             source_header.frame_id, source_header.stamp,
-                             target_header.frame_id, obstacle_to_map);
-        tf::transformTFToEigen(obstacle_to_map, obstacle_to_map_eig);
-      }
-      catch (tf::TransformException ex)
-      {
-        ROS_ERROR("%s",ex.what());
-        obstacle_to_map_eig.setIdentity();
-      }
+//       Eigen::Affine3d obstacle_to_map_eig;
+//       try 
+//       {
+//         std_msgs::Header source_header = egocircle_wrapper_->getCurrentHeader();
+//         
+//         tf::StampedTransform obstacle_to_map;
+//         tf_->waitForTransform(target_header.frame_id, target_header.stamp,
+//                               source_header.frame_id, source_header.stamp,
+//                               target_header.frame_id, ros::Duration(0.5));
+//         tf_->lookupTransform(target_header.frame_id, target_header.stamp,
+//                              source_header.frame_id, source_header.stamp,
+//                              target_header.frame_id, obstacle_to_map);
+//         tf::transformTFToEigen(obstacle_to_map, obstacle_to_map_eig);
+//       }
+//       catch (tf::TransformException ex)
+//       {
+//         ROS_ERROR("%s",ex.what());
+//         obstacle_to_map_eig.setIdentity();
+//       }
       
       for(auto point : points)
       {
-            Eigen::Vector3d obs;
+            Eigen::Vector2d obs;
             obs.coeffRef(0) = point.x;
             obs.coeffRef(1) = point.y;
   //           costmap_->mapToWorld(i,j,obs.coeffRef(0), obs.coeffRef(1));
@@ -651,7 +655,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
   //           if ( obs_dir.dot(robot_orient) < 0 && obs_dir.norm() > cfg_.obstacles.costmap_obstacles_behind_robot_dist  )
   //             continue;
             
-            obstacles_.push_back(ObstaclePtr(new PointObstacle( (obstacle_to_map_eig * obs).head(2) )));
+            obstacles_.push_back(ObstaclePtr(new PointObstacle(obs)));
             
       }
     }

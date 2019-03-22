@@ -37,6 +37,7 @@
  *********************************************************************/
 
 #include <teb_local_planner/homotopy_class_planner.h>
+#include <teb_local_planner/gap_finder.h>
 
 #include <limits>
 
@@ -48,9 +49,9 @@ HomotopyClassPlanner::HomotopyClassPlanner() : cfg_(NULL), obstacles_(NULL), via
 }
 
 HomotopyClassPlanner::HomotopyClassPlanner(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model,
-                                           TebVisualizationPtr visual, const ViaPointContainer* via_points) : initial_plan_(NULL)
+                                           TebVisualizationPtr visual, const ViaPointContainer* via_points,  std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle) : initial_plan_(NULL)
 {
-  initialize(cfg, obstacles, robot_model, visual, via_points);
+  initialize(cfg, obstacles, robot_model, visual, via_points, egocircle);
 }
 
 HomotopyClassPlanner::~HomotopyClassPlanner()
@@ -58,7 +59,7 @@ HomotopyClassPlanner::~HomotopyClassPlanner()
 }
 
 void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model,
-                                      TebVisualizationPtr visual, const ViaPointContainer* via_points)
+                                      TebVisualizationPtr visual, const ViaPointContainer* via_points, std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle)
 {
   cfg_ = &cfg;
   obstacles_ = obstacles;
@@ -66,7 +67,8 @@ void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obsta
   robot_model_ = robot_model;
 
   if (cfg_->hcp.simple_exploration)
-    graph_search_ = boost::shared_ptr<GraphSearchInterface>(new lrKeyPointGraph(*cfg_, this));
+    //graph_search_ = boost::shared_ptr<GraphSearchInterface>(new lrKeyPointGraph(*cfg_, this));
+    graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle));
   else
     graph_search_ = boost::shared_ptr<GraphSearchInterface>(new ProbRoadmapGraph(*cfg_, this));
 
