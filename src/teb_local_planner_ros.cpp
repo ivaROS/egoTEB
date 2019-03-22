@@ -603,7 +603,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithCustomObstacles()
     }
   }
 }
-
+/*
 void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time stamp) //(const tf::Stamped<tf::Pose>& global_pose)
 {
   if (cfg_.obstacles.include_egocircle_obstacles)
@@ -621,7 +621,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
     {
       egocircle_wrapper_->setInflationRadius(robot_inscribed_radius_);
       std::vector<ego_circle::EgoCircularPoint> points = egocircle.getDecimatedEgoCircularPoints();//getLocalEgoCircularPoints();
-      egocircle.transformToGlobal(points);
+      //egocircle.transformToGlobal(points);
       
 //       Eigen::Affine3d obstacle_to_map_eig;
 //       try 
@@ -660,7 +660,7 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
       }
     }
   }
-}
+}*/
 
 void TebLocalPlannerROS::updateViaPointsContainer(const std::vector<geometry_msgs::PoseStamped>& transformed_plan, double min_separation)
 {

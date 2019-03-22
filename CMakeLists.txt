@@ -189,6 +189,7 @@ add_library(teb_local_planner
    src/teb_local_planner_ros.cpp
    src/graph_search.cpp
    src/gap_finder.cpp
+   src/egocircle_obstacles.cpp
 )
 
 # Dynamic reconfigure: make sure configure headers are built before any node using them
@@ -201,6 +202,7 @@ target_link_libraries(teb_local_planner
    ${catkin_LIBRARIES}
 )
 
+#target_compile_options(teb_local_planner PRIVATE -Q -ftime-report)
 
 
 ## Build additional executables
