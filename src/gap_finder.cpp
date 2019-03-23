@@ -33,7 +33,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   graph_[start_vtx].pos = start.position();
   diff.normalize();
   
-  std::vector<ego_circle::EgoCircularPoint> gap_points = egocircle_->getGapPoints();
+  std::vector<ego_circle::EgoCircularPoint> gap_points = egocircle_->getHierarchicalGapPoints(.5);
   egocircle_->transformToGlobal(gap_points);
   
   //NOTE: need to transform these to global frame unfortunately
