@@ -27,17 +27,13 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
     }
     return;
   }
-  
-  // Insert Vertices
-  HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
-  graph_[start_vtx].pos = start.position();
+
   diff.normalize();
   
+  // Get vertices of gaps
   std::vector<ego_circle::EgoCircularPoint> gap_points = egocircle_->getHierarchicalGapPoints(.5);
   egocircle_->transformToGlobal(gap_points);
-  
-  //NOTE: need to transform these to global frame unfortunately
-  
+    
   ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
 
   // Start sampling
@@ -53,35 +49,78 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
     graph_[v].pos = sample;
   }
 
+  HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
+  graph_[start_vtx].pos = start.position();
+  
   // Now add goal vertex
   HcGraphVertexType goal_vtx = boost::add_vertex(graph_); // goal vertex
   graph_[goal_vtx].pos = goal.position();
 
-  ROS_INFO_STREAM("Added verticies to graph.");
+  auto num_vertices = boost::num_vertices(graph_);
+  
+  ROS_INFO_STREAM("Added (" << num_vertices << ") vertices to graph.");
   
 
+//   // Insert Edges
+//   HcGraphVertexIterator it_i, end_i, it_j, end_j;
+//   for (boost::tie(it_i,end_i) = boost::vertices(graph_); it_i!=boost::prior(end_i); ++it_i) // ignore goal in this loop
+//   {
+//     for (boost::tie(it_j,end_j) = boost::vertices(graph_); it_j!=end_j; ++it_j) // check all forward connections
+//     {
+//       if (it_i==it_j) // same vertex found
+//         continue;
+// 
+//       Eigen::Vector2d distij = graph_[*it_j].pos-graph_[*it_i].pos;
+//       distij.normalize(); // normalize in place
+// 
+//       // Check if the direction is backwards:
+//       if (distij.dot(diff)<=obstacle_heading_threshold)
+//           continue; // diff is already normalized
+// 
+// 
+//       // Collision Check
+//       bool collision = false;
+//       for (ObstContainer::const_iterator it_obst = hcp_->obstacles()->begin(); it_obst != hcp_->obstacles()->end(); ++it_obst)
+//       {
+//         if ( (*it_obst)->checkLineIntersection(graph_[*it_i].pos,graph_[*it_j].pos, dist_to_obst) )
+//         {
+//           collision = true;
+//           break;
+//         }
+//       }
+//       if (collision)
+//         continue;
+// 
+//       // Create Edge
+//       boost::add_edge(*it_i,*it_j,graph_);
+//     }
+//   }
+  
   // Insert Edges
   HcGraphVertexIterator it_i, end_i, it_j, end_j;
-  for (boost::tie(it_i,end_i) = boost::vertices(graph_); it_i!=boost::prior(end_i); ++it_i) // ignore goal in this loop
+  for (boost::tie(it_i,end_i) = boost::vertices(graph_); it_i!=boost::prior(end_i,2); ++it_i) // ignore start and goal in this loop
   {
-    for (boost::tie(it_j,end_j) = boost::vertices(graph_); it_j!=end_j; ++it_j) // check all forward connections
+    // A gap vertex must be reachable from the start, so only check if it is in the right general direction
     {
-      if (it_i==it_j) // same vertex found
-        continue;
-
-      Eigen::Vector2d distij = graph_[*it_j].pos-graph_[*it_i].pos;
+      Eigen::Vector2d distij = graph_[*it_j].pos-start.position();
       distij.normalize(); // normalize in place
-
+      
       // Check if the direction is backwards:
       if (distij.dot(diff)<=obstacle_heading_threshold)
-          continue; // diff is already normalized
-
-
-      // Collision Check
+      {
+        //continue; // diff is already normalized
+      }
+        
+      // Add edge between start and gap verticies
+      boost::add_edge(*it_i, start_vtx, graph_);
+    }
+    
+    // Collision Check between gap vertex and goal
+    {
       bool collision = false;
       for (ObstContainer::const_iterator it_obst = hcp_->obstacles()->begin(); it_obst != hcp_->obstacles()->end(); ++it_obst)
       {
-        if ( (*it_obst)->checkLineIntersection(graph_[*it_i].pos,graph_[*it_j].pos, dist_to_obst) )
+        if ( (*it_obst)->checkLineIntersection(graph_[*it_i].pos, goal.position(), dist_to_obst) )
         {
           collision = true;
           break;
@@ -89,13 +128,33 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
       }
       if (collision)
         continue;
-
+      
       // Create Edge
-      boost::add_edge(*it_i,*it_j,graph_);
+      boost::add_edge(*it_i, goal_vtx, graph_);
     }
   }
   
-  ROS_INFO_STREAM("Inserted edges.");
+  //Finally, Collision Check between start and goal
+  {
+    bool collision = false;
+    for (ObstContainer::const_iterator it_obst = hcp_->obstacles()->begin(); it_obst != hcp_->obstacles()->end(); ++it_obst)
+    {
+      if ( (*it_obst)->checkLineIntersection(start.position(), goal.position(), dist_to_obst) )
+      {
+        collision = true;
+        break;
+      }
+    }
+    if (!collision)
+    {
+      boost::add_edge(start_vtx, goal_vtx, graph_);
+    }
+  }
+  
+  auto num_edges = boost::num_edges(graph_);
+  
+  ROS_INFO_STREAM("Added (" << num_edges << ") edges to graph.");
+  
 
   /// Find all paths between start and goal!
   std::vector<HcGraphVertexType> visited;
