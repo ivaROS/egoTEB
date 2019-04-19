@@ -388,7 +388,7 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     
     return false;
   }
-  ROS_INFO("Trajectory is feasible."); //NOTE: Temporary
+  ROS_DEBUG("Trajectory is feasible."); //NOTE: Temporary
 
   // Get the velocity command for this sampling interval
   if (!planner_->getVelocityCommand(cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z))

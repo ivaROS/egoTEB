@@ -1255,7 +1255,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const ego_circle::EgoCircleCostImpl
     ego_circle::EgoCircularPoint ec_point(teb().Pose(i).x(), teb().Pose(i).y());
     float min_dist = ego_costs_.getMinDist(ec_point);
     
-    ROS_INFO_STREAM("[" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
+    ROS_DEBUG_STREAM("[" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
     
     if(min_dist < inscribed_radius)
     {
