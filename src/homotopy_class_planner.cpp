@@ -110,18 +110,29 @@ bool HomotopyClassPlanner::plan(const tf::Pose& start, const tf::Pose& goal, con
 bool HomotopyClassPlanner::plan(const PoseSE2& start, const PoseSE2& goal, const geometry_msgs::Twist* start_vel, bool free_goal_vel)
 {
   ROS_ASSERT_MSG(initialized_, "Call initialize() first.");
-
+  
+  visualization_->publishTebContainer(tebs_, "preupdate");
+  
   // Update old TEBs with new start, goal and velocity
   updateAllTEBs(&start, &goal, start_vel);
-
+  visualization_->publishTebContainer(tebs_, "updated");
+  
   // Init new TEBs based on newly explored homotopy classes
   exploreEquivalenceClassesAndInitTebs(start, goal, cfg_->obstacles.min_obstacle_dist, start_vel);
+  visualization_->publishTebContainer(tebs_, "explored");
+  
   // update via-points if activated
   updateReferenceTrajectoryViaPoints(cfg_->hcp.viapoints_all_candidates);
+  visualization_->publishTebContainer(tebs_, "viapoints");
+  
   // Optimize all trajectories in alternative homotopy classes
   optimizeAllTEBs(cfg_->optim.no_inner_iterations, cfg_->optim.no_outer_iterations);
+  visualization_->publishTebContainer(tebs_, "optimized");
+  
   // Delete any detours
   deleteTebDetours(-0.1);
+  visualization_->publishTebContainer(tebs_, "detours");
+  
   // Select which candidate (based on alternative homotopy classes) should be used
   selectBestTeb();
 

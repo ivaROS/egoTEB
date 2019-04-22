@@ -112,7 +112,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
       }
         
       // Add edge between start and gap verticies
-      boost::add_edge(*it_i, start_vtx, graph_);
+      boost::add_edge(start_vtx, *it_i, graph_);
     }
     
     // Collision Check between gap vertex and goal

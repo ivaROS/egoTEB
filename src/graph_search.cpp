@@ -62,7 +62,7 @@ void GraphSearchInterface::DepthFirst(HcGraph& g, std::vector<HcGraphVertexType>
     if ( *it == goal ) // goal reached
     {
       visited.push_back(*it);
-
+      ROS_INFO_STREAM_NAMED("graph_search", "Found path to goal through graph!");
       // Add new TEB, if this path belongs to a new homotopy class
       hcp_->addAndInitNewTeb(visited.begin(), visited.end(), boost::bind(getVector2dFromHcGraph, _1, boost::cref(graph_)),
                              start_orientation, goal_orientation, start_velocity);
