@@ -332,7 +332,7 @@ void TebVisualization::publishTebContainer(const TebOptPlannerContainer& teb_pla
 if ( printErrorWhenNotInitialized() )
     return;
 
-  ROS_INFO_STREAM("#TEBS: " << teb_planner.size());
+  ROS_INFO_STREAM("[" << ns << "] #TEBS: " << teb_planner.size());
 
   visualization_msgs::Marker marker;
   marker.header.frame_id = cfg_->map_frame;

@@ -408,6 +408,11 @@ public:
 		      boost::optional<double> max_acc_x, boost::optional<double> max_acc_theta,
 		      boost::optional<double> start_orientation, boost::optional<double> goal_orientation, int min_samples = 3, bool guess_backwards_motion = false);  
   
+  template<typename BidirIter, typename Fun>
+  bool initTrajectoryToGoal(BidirIter path_start, BidirIter path_end, Fun fun_position, double max_vel_x, double max_vel_theta,
+                            boost::optional<double> max_acc_x, boost::optional<double> max_acc_theta,
+                            boost::optional<double> start_orientation, boost::optional<double> goal_orientation, int min_samples = 3, bool guess_backwards_motion = false, double diststep =.1);  
+  
   /**
    * @brief Initialize a trajectory from a reference pose sequence (positions and orientations).
    *

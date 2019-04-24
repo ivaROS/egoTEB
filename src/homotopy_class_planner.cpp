@@ -126,11 +126,14 @@ bool HomotopyClassPlanner::plan(const PoseSE2& start, const PoseSE2& goal, const
   visualization_->publishTebContainer(tebs_, "viapoints");
   
   // Optimize all trajectories in alternative homotopy classes
-  optimizeAllTEBs(cfg_->optim.no_inner_iterations, cfg_->optim.no_outer_iterations);
-  visualization_->publishTebContainer(tebs_, "optimized");
+  for(int i = 1; i <= cfg_->optim.no_outer_iterations; ++i)
+  {
+    optimizeAllTEBs(cfg_->optim.no_inner_iterations, 1);
+    visualization_->publishTebContainer(tebs_, std::string("optimized_" + std::to_string(i)));
+  }
   
   // Delete any detours
-  deleteTebDetours(-0.1);
+  deleteTebDetours(-1); //was -0.1
   visualization_->publishTebContainer(tebs_, "detours");
   
   // Select which candidate (based on alternative homotopy classes) should be used
@@ -197,7 +200,9 @@ bool HomotopyClassPlanner::hasEquivalenceClass(const EquivalenceClassPtr& eq_cla
   for (const std::pair<EquivalenceClassPtr, bool>& eqrel : equivalence_classes_)
   {
      if (eq_class->isEqual(*eqrel.first))
+     {
         return true; // Found! Homotopy class already exists, therefore nothing added
+     }
   }
   return false;
 }
@@ -236,9 +241,10 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
   while(it_teb != tebs_.end())
   {
     // delete Detours if there is at least one other TEB candidate left in the container
-    if (delete_detours && tebs_.size()>1 && it_teb->get()->teb().detectDetoursBackwards(-0.1))
+    if (delete_detours && tebs_.size()>1 && it_teb->get()->teb().detectDetoursBackwards(-1)) //was -0.1
     {
       it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
+      ROS_WARN_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it detours backwards");
       continue;
     }
 
@@ -254,6 +260,8 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
     if (!new_flag)
     {
       it_teb = tebs_.erase(it_teb);
+      ROS_WARN_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it belongs to an existing homotopic class");
+      
       continue;
     }
 
@@ -374,9 +382,11 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const PoseSE2& start
 
   if(addEquivalenceClassIfNew(H))
   {
+    ROS_WARN_STREAM("Added new TEB! [Start/Goal]");
     tebs_.push_back(candidate);
     return tebs_.back();
   }
+  ROS_INFO_STREAM("Did not add new TEB! [Start/Goal]");
 
   // If the candidate constitutes no new equivalence class, return a null pointer
   return TebOptimalPlannerPtr();
@@ -398,9 +408,12 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const std::vector<ge
 
   if(addEquivalenceClassIfNew(initial_plan_eq_class_, true)) // also prevent candidate from deletion
   {
+    ROS_WARN_STREAM("Added new TEB! [vector<PoseStamped>]");
     tebs_.push_back(candidate);
     return tebs_.back();
   }
+  ROS_INFO_STREAM("Did not add new TEB! [vector<PoseStamped>]");
+  
 
   // If the candidate constitutes no new equivalence class, return a null pointer
   return TebOptimalPlannerPtr();
@@ -476,6 +489,7 @@ void HomotopyClassPlanner::deleteTebDetours(double threshold)
         it_teb = tebs_.erase(it_teb);
         it_eqclasses = equivalence_classes_.erase(it_eqclasses);
         modified = true;
+        ROS_WARN("HomotopyClassPlanner::deleteTebDetours(): removing candidate that detours backwards");
       }
     }
 
@@ -486,7 +500,7 @@ void HomotopyClassPlanner::deleteTebDetours(double threshold)
       it_teb = tebs_.erase(it_teb);
       it_eqclasses = equivalence_classes_.erase(it_eqclasses);
       modified = true;
-      ROS_DEBUG("HomotopyClassPlanner::deleteTebDetours(): removing candidate that was not optimized successfully");
+      ROS_WARN("HomotopyClassPlanner::deleteTebDetours(): removing candidate that was not optimized successfully");
     }
 
     if (!modified)

@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Marker1
+        - /Marker1/Namespaces1
       Splitter Ratio: 0.5
     Tree Height: 562
   - Class: rviz/Selection
@@ -80,6 +82,7 @@ Visualization Manager:
         X: 0
         Y: 0
         Z: 0
+      Pose Color: 255; 85; 255
       Pose Style: None
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
@@ -108,7 +111,16 @@ Visualization Manager:
       Marker Topic: /test_optim_node/teb_markers
       Name: Marker
       Namespaces:
+        GraphEdges: false
+        GraphVertices: false
         PointObstacles: true
+        TebContainer: true
+        detours: false
+        explored: false
+        optimized: false
+        preupdate: false
+        updated: false
+        viapoints: false
       Queue Size: 100
       Value: true
     - Class: rviz/InteractiveMarkers
@@ -144,7 +156,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.77247
+      Distance: 10.9197607
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -156,12 +168,13 @@ Visualization Manager:
         Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
+      Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
       Pitch: 1.56979632
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.71043873
+      Yaw: 4.65544081
     Saved: ~
 Window Geometry:
   Displays:
