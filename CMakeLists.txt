@@ -190,6 +190,7 @@ add_library(teb_local_planner
    src/graph_search.cpp
    src/gap_finder.cpp
    src/egocircle_obstacles.cpp
+   src/graph_interpolation.cpp
 )
 
 # Dynamic reconfigure: make sure configure headers are built before any node using them

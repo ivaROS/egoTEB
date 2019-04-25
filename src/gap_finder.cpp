@@ -44,6 +44,8 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
     sample(0)=gap_points[i].x;
     sample(1)=gap_points[i].y;
     
+    ROS_INFO_STREAM("Gap #" << i << ": [" << sample(0) << "," << sample(1) << "]"); 
+    
     // Add new vertex
     HcGraphVertexType v = boost::add_vertex(graph_);
     graph_[v].pos = sample;

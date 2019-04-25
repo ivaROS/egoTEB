@@ -183,7 +183,13 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
 }  
 
 
-
+inline
+std::string toString(const Eigen::Vector2d& pose)
+{
+  std::stringstream ss;
+  ss << "[" << pose[0] << ", " << pose[1] << "]";
+  return ss.str();
+}
 
 template<typename BidirIter, typename Fun>
 bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path_end, Fun fun_position, double max_vel_x, double max_vel_theta,
@@ -252,6 +258,8 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
       //double no_steps_d = diff_norm/std::abs(diststep); // ignore negative values
       //unsigned int no_steps = (unsigned int) std::floor(no_steps_d);
       
+      ROS_INFO_STREAM("Next: " << toString(next_point) << "; curr: " << toString(curr_point) << "; diff: " << toString(diff_last) << "; diff_norm: " << diff_norm << "; unit_diff: " << toString(unit_diff) << "; yaw: " << yaw);
+      
       double remaining_dist = diff_norm;
       
       while(remaining_dist >0)
@@ -274,11 +282,18 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         
         if (timestep<0) timestep=0.2; // TODO: this is an assumption
         
+        ROS_INFO_STREAM("idx: " << idx << "; sub_diff_norm: " << sub_diff_norm << "; curr_point: " << toString(curr_point) << "; remaining_dist: " << remaining_dist << "; timestep: " << timestep);
         
         addPoseAndTimeDiff(curr_point, yaw ,timestep);
       
         ++idx;
-        
+        //ROS_ASSERT_MSG(idx > 200, "Uh oh, idx got really big.  Value = %d", idx);
+        if(idx>200)
+        {
+          ROS_BREAK();
+          ROS_ERROR("HELP!");
+          return false;
+        }
       }
     }
     Eigen::Vector2d diff = goal_position-Pose(idx).position();
