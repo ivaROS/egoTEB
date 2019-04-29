@@ -304,6 +304,8 @@ bool TebOptimalPlanner::plan(const PoseSE2& start, const PoseSE2& goal, const ge
 
 bool TebOptimalPlanner::buildGraph(double weight_multiplier)
 {
+  ros::WallTime start_time = ros::WallTime::now();
+  
   if (!optimizer_->edges().empty() || !optimizer_->vertices().empty())
   {
     ROS_WARN("Cannot build graph, because it is not empty. Call graphClear()!");
@@ -337,12 +339,16 @@ bool TebOptimalPlanner::buildGraph(double weight_multiplier)
 
     
   AddEdgesPreferRotDir();
-    
+  
+  ROS_INFO_STREAM_NAMED("timing", "[buildGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
+  
   return true;  
 }
 
 bool TebOptimalPlanner::optimizeGraph(int no_iterations,bool clear_after)
 {
+  ros::WallTime start_time = ros::WallTime::now();
+  
   if (cfg_->robot.max_vel_x<0.01)
   {
     ROS_WARN("optimizeGraph(): Robot Max Velocity is smaller than 0.01m/s. Optimizing aborted...");
@@ -373,7 +379,9 @@ bool TebOptimalPlanner::optimizeGraph(int no_iterations,bool clear_after)
   }
 
   if (clear_after) clearGraph();	
-    
+  
+  ROS_INFO_STREAM_NAMED("timing", "[optimizeGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
+  
   return true;
 }
 
@@ -969,6 +977,8 @@ void TebOptimalPlanner::AddEdgesPreferRotDir()
 
 void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoint_cost_scale, bool alternative_time_cost)
 { 
+  ros::WallTime start_time = ros::WallTime::now();
+  
   // check if graph is empty/exist  -> important if function is called between buildGraph and optimizeGraph/clearGraph
   bool graph_exist_flag(false);
   if (optimizer_->edges().empty() && optimizer_->vertices().empty())
@@ -1066,6 +1076,8 @@ void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoi
   // delete temporary created graph
   if (!graph_exist_flag) 
     clearGraph();
+  
+  ROS_INFO_STREAM_NAMED("timing", "[computeCurrentCost] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
 }
 
 

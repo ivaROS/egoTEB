@@ -126,14 +126,17 @@ bool HomotopyClassPlanner::plan(const PoseSE2& start, const PoseSE2& goal, const
   visualization_->publishTebContainer(tebs_, "viapoints");
   
   // Optimize all trajectories in alternative homotopy classes
-  for(int i = 1; i <= cfg_->optim.no_outer_iterations; ++i)
-  {
-    optimizeAllTEBs(cfg_->optim.no_inner_iterations, 1);
-    visualization_->publishTebContainer(tebs_, std::string("optimized_" + std::to_string(i)));
-  }
+//   for(int i = 1; i <= cfg_->optim.no_outer_iterations; ++i)
+//   {
+//     optimizeAllTEBs(cfg_->optim.no_inner_iterations, 1);
+//     visualization_->publishTebContainer(tebs_, std::string("optimized_" + std::to_string(i)));
+//   }
+  
+  optimizeAllTEBs(cfg_->optim.no_inner_iterations, cfg_->optim.no_inner_iterations);
+  visualization_->publishTebContainer(tebs_, std::string("optimized"));
   
   // Delete any detours
-  deleteTebDetours(-1); //was -0.1
+  deleteTebDetours(cfg_->hcp.detour_threshold); //was -0.1
   visualization_->publishTebContainer(tebs_, "detours");
   
   // Select which candidate (based on alternative homotopy classes) should be used
@@ -241,7 +244,7 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
   while(it_teb != tebs_.end())
   {
     // delete Detours if there is at least one other TEB candidate left in the container
-    if (delete_detours && tebs_.size()>1 && it_teb->get()->teb().detectDetoursBackwards(-1)) //was -0.1
+    if (delete_detours && tebs_.size()>1 && it_teb->get()->teb().detectDetoursBackwards(cfg_->hcp.detour_threshold)) //was -0.1
     {
       it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
       ROS_WARN_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it detours backwards");
@@ -349,6 +352,8 @@ void HomotopyClassPlanner::updateReferenceTrajectoryViaPoints(bool all_trajector
 
 void HomotopyClassPlanner::exploreEquivalenceClassesAndInitTebs(const PoseSE2& start, const PoseSE2& goal, double dist_to_obst, const geometry_msgs::Twist* start_vel)
 {
+  ros::WallTime start_time = ros::WallTime::now();
+  
   // first process old trajectories
   renewAndAnalyzeOldTebs(false);
 
@@ -365,6 +370,8 @@ void HomotopyClassPlanner::exploreEquivalenceClassesAndInitTebs(const PoseSE2& s
 
   // now explore new homotopy classes and initialize tebs if new ones are found. The appropriate createGraph method is chosen via polymorphism.
   graph_search_->createGraph(start,goal,dist_to_obst,cfg_->hcp.obstacle_heading_threshold, start_vel);
+  
+  ROS_INFO_STREAM_NAMED("timing", "[exploreEquivalenceClassesAndInitTebs] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
 }
 
 
@@ -421,6 +428,8 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const std::vector<ge
 
 void HomotopyClassPlanner::updateAllTEBs(const PoseSE2* start, const PoseSE2* goal, const geometry_msgs::Twist* start_velocity)
 {
+  ros::WallTime start_time = ros::WallTime::now();
+  
   // If new goal is too far away, clear all existing trajectories to let them reinitialize later.
   // Since all Tebs are sharing the same fixed goal pose, just take the first candidate:
   if (!tebs_.empty() && (goal->position() - tebs_.front()->teb().BackPose().position()).norm() >= cfg_->trajectory.force_reinit_new_goal_dist)
@@ -437,11 +446,15 @@ void HomotopyClassPlanner::updateAllTEBs(const PoseSE2* start, const PoseSE2* go
     if (start_velocity)
       it_teb->get()->setVelocityStart(*start_velocity);
   }
+  
+  ROS_INFO_STREAM_NAMED("timing", "[updateAllTEBs] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
 }
 
 
 void HomotopyClassPlanner::optimizeAllTEBs(int iter_innerloop, int iter_outerloop)
 {
+  ros::WallTime start_time = ros::WallTime::now();
+  
   // optimize TEBs in parallel since they are independend of each other
   if (cfg_->hcp.enable_multithreading)
   {
@@ -462,10 +475,14 @@ void HomotopyClassPlanner::optimizeAllTEBs(int iter_innerloop, int iter_outerloo
                                  cfg_->hcp.selection_viapoint_cost_scale, cfg_->hcp.selection_alternative_time_cost); // compute cost as well inside optimizeTEB (last argument = true)
     }
   }
+  
+  ROS_INFO_STREAM_NAMED("timing", "[optimizeAllTEBs] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
 }
 
 void HomotopyClassPlanner::deleteTebDetours(double threshold)
 {
+  ros::WallTime start_time = ros::WallTime::now();
+  
   TebOptPlannerContainer::iterator it_teb = tebs_.begin();
   EquivalenceClassContainer::iterator it_eqclasses = equivalence_classes_.begin();
 
@@ -509,6 +526,8 @@ void HomotopyClassPlanner::deleteTebDetours(double threshold)
       ++it_eqclasses;
     }
   }
+  
+  ROS_INFO_STREAM_NAMED("timing", "[deleteTebDetours] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
 }
 
 TebOptimalPlannerPtr HomotopyClassPlanner::getInitialPlanTEB()

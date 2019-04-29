@@ -196,8 +196,9 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
                                             boost::optional<double> max_acc_x, boost::optional<double> max_acc_theta,
                                             boost::optional<double> start_orientation, boost::optional<double> goal_orientation, int min_samples, bool guess_backwards_motion, double diststep) 
 {
+  BidirIter goal_it = boost::prior(path_end);
   Eigen::Vector2d start_position = fun_position( *path_start );
-  Eigen::Vector2d goal_position = fun_position( *boost::prior(path_end) );
+  Eigen::Vector2d goal_position = fun_position( *goal_it );
   
   bool backwards = false;
   
@@ -232,8 +233,8 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
     addPose(start_position, start_orient, true); // add starting point and mark it as fixed for optimization		
     
     // we insert middle points now (increase start by 1 and decrease goal by 1)
-    std::advance(path_start,1);
-    std::advance(path_end,-1);
+    //std::advance(path_start,1);
+    //std::advance(path_end,-1);
     int idx=0;
     for (; path_start != path_end; ++path_start) // insert middle-points
     {
@@ -249,18 +250,20 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
       Eigen::Vector2d unit_diff = diff_last/diff_norm;
       
       double yaw = atan2(diff_last[1],diff_last[0]);
-      double dx = diststep*std::cos(yaw);
-      double dy = diststep*std::sin(yaw);
       
       if (backwards)
         yaw = g2o::normalize_theta(yaw + M_PI);
       
-      //double no_steps_d = diff_norm/std::abs(diststep); // ignore negative values
-      //unsigned int no_steps = (unsigned int) std::floor(no_steps_d);
       
       ROS_INFO_STREAM("Next: " << toString(next_point) << "; curr: " << toString(curr_point) << "; diff: " << toString(diff_last) << "; diff_norm: " << diff_norm << "; unit_diff: " << toString(unit_diff) << "; yaw: " << yaw);
       
       double remaining_dist = diff_norm;
+      
+      // If this is the last pose, stop 1 pose short so we can properly add it
+      if(path_start==goal_it)
+      {
+        remaining_dist-= diststep;
+      }
       
       while(remaining_dist >0)
       {
@@ -272,17 +275,22 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         double timestep_vel = sub_diff_norm/max_vel_x; // constant velocity
         double timestep_acc;
       
-        if (max_acc_x)
+        if(max_acc_x)
         {
           timestep_acc = sqrt(2*sub_diff_norm/(*max_acc_x)); // constant acceleration
-          if (timestep_vel < timestep_acc && max_acc_x) timestep = timestep_acc;
-          else timestep = timestep_vel;
+          if (timestep_vel < timestep_acc && max_acc_x) // pretty sure the '&& max_acc_x' term is redundant. also, how can this not be true? the time to travel a distance from stop at max acceleration vs the time at max vel
+          {
+            timestep = timestep_acc;
+          }
+          else
+          {
+            timestep = timestep_vel;
+          }
         }
         else timestep = timestep_vel;
         
         if (timestep<0) timestep=0.2; // TODO: this is an assumption
         
-        ROS_INFO_STREAM("idx: " << idx << "; sub_diff_norm: " << sub_diff_norm << "; curr_point: " << toString(curr_point) << "; remaining_dist: " << remaining_dist << "; timestep: " << timestep);
         
         addPoseAndTimeDiff(curr_point, yaw ,timestep);
       
@@ -290,12 +298,16 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         //ROS_ASSERT_MSG(idx > 200, "Uh oh, idx got really big.  Value = %d", idx);
         if(idx>200)
         {
-          ROS_BREAK();
           ROS_ERROR("HELP!");
-          return false;
+        }
+        else
+        {
+          ROS_INFO_STREAM("idx: " << idx << "; sub_diff_norm: " << sub_diff_norm << "; curr_point: " << toString(curr_point) << "; remaining_dist: " << remaining_dist << "; timestep: " << timestep);
         }
       }
     }
+    
+    // Note: with interpolation, unlikely that will be less than min_samples, so could simplify things and remove this part
     Eigen::Vector2d diff = goal_position-Pose(idx).position();
     double diff_norm = diff.norm();
     double timestep_vel = diff_norm/max_vel_x; // constant velocity

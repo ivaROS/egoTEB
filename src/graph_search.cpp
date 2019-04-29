@@ -64,12 +64,12 @@ void GraphSearchInterface::DepthFirst(HcGraph& g, std::vector<HcGraphVertexType>
       visited.push_back(*it);
       ROS_INFO_STREAM_NAMED("graph_search", "Found path to goal through graph!");
       // Add new TEB, if this path belongs to a new homotopy class
-      std::vector<geometry_msgs::PoseStamped> plan = InterpolateGraph(g, visited, start_orientation, goal_orientation, .1);
-      hcp_->addAndInitNewTeb(plan, start_velocity);
+      //std::vector<geometry_msgs::PoseStamped> plan = InterpolateGraph(g, visited, start_orientation, goal_orientation, .1);
+      //hcp_->addAndInitNewTeb(plan, start_velocity);
       
       
-      //hcp_->addAndInitNewTeb(visited.begin(), visited.end(), boost::bind(getVector2dFromHcGraph, _1, boost::cref(graph_)),
-      //                       start_orientation, goal_orientation, start_velocity);
+      hcp_->addAndInitNewTeb(visited.begin(), visited.end(), boost::bind(getVector2dFromHcGraph, _1, boost::cref(graph_)),
+                             start_orientation, goal_orientation, start_velocity);
 
       visited.pop_back();
       break;

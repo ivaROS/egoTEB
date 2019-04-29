@@ -141,6 +141,7 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("h_signature_threshold", hcp.h_signature_threshold, hcp.h_signature_threshold); 
   nh.param("obstacle_keypoint_offset", hcp.obstacle_keypoint_offset, hcp.obstacle_keypoint_offset); 
   nh.param("obstacle_heading_threshold", hcp.obstacle_heading_threshold, hcp.obstacle_heading_threshold); 
+  nh.param("detour_threshold", hcp.detour_threshold, hcp.detour_threshold);
   nh.param("viapoints_all_candidates", hcp.viapoints_all_candidates, hcp.viapoints_all_candidates);
   nh.param("visualize_hc_graph", hcp.visualize_hc_graph, hcp.visualize_hc_graph); 
   nh.param("visualize_with_time_as_z_axis_scale", hcp.visualize_with_time_as_z_axis_scale, hcp.visualize_with_time_as_z_axis_scale);
@@ -247,6 +248,7 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   hcp.roadmap_graph_area_length_scale = cfg.roadmap_graph_area_length_scale;
   hcp.h_signature_prescaler = cfg.h_signature_prescaler;
   hcp.h_signature_threshold = cfg.h_signature_threshold;
+  hcp.detour_threshold = cfg.detour_threshold;
   hcp.viapoints_all_candidates = cfg.viapoints_all_candidates;
   hcp.visualize_hc_graph = cfg.visualize_hc_graph;
   hcp.visualize_with_time_as_z_axis_scale = cfg.visualize_with_time_as_z_axis_scale;
