@@ -222,7 +222,8 @@ public:
 
     if(dist < cfg_->obstacles.min_obstacle_dist + cfg_->optim.penalty_epsilon)
     {
-      _error[0] = 1/(dist - (cfg_->obstacles.min_obstacle_dist));
+      _error[0] = std::abs(1/(dist - (cfg_->obstacles.min_obstacle_dist)));
+      ROS_DEBUG_STREAM_NAMED("edges.obstacle.computeError", "dist=" << dist << "; error=" << _error[0]);
     }
     else
     {

@@ -69,7 +69,7 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(BidirIter path_start
 
   candidate->teb().initTrajectoryToGoal(path_start, path_end, fun_position, cfg_->robot.max_vel_x, cfg_->robot.max_vel_theta,
                                  cfg_->robot.acc_lim_x, cfg_->robot.acc_lim_theta, start_orientation, goal_orientation, cfg_->trajectory.min_samples,
-                                 cfg_->trajectory.allow_init_with_backwards_motion, .1);
+                                 cfg_->trajectory.allow_init_with_backwards_motion, cfg_->trajectory.dist_step);
 
   if (start_velocity)
     candidate->setVelocityStart(*start_velocity);

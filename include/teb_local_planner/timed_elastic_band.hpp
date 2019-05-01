@@ -200,6 +200,11 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
   Eigen::Vector2d start_position = fun_position( *path_start );
   Eigen::Vector2d goal_position = fun_position( *goal_it );
   
+  if(diststep <=0)
+  {
+    diststep = std::numeric_limits<double>::max();
+  }
+  
   bool backwards = false;
   
   double start_orient, goal_orient;

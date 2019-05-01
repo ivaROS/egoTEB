@@ -70,6 +70,7 @@ public:
   {
     double teb_autosize; //!< Enable automatic resizing of the trajectory w.r.t to the temporal resolution (recommended)
     double dt_ref; //!< Desired temporal resolution of the trajectory (should be in the magniture of the underlying control rate)
+    double dist_step;
     double dt_hysteresis; //!< Hysteresis for automatic resizing depending on the current temporal resolution (dt): usually 10% of dt_ref
     int min_samples; //!< Minimum number of samples (should be always greater than 2)
     int max_samples; //!< Maximum number of samples; Warning: if too small the discretization/resolution might not be sufficient for the given robot model or obstacle avoidance does not work anymore.
@@ -225,6 +226,7 @@ public:
     
     trajectory.teb_autosize = true;
     trajectory.dt_ref = 0.3;
+    trajectory.dist_step = 0;
     trajectory.dt_hysteresis = 0.1;
     trajectory.min_samples = 3;
     trajectory.max_samples = 500;
