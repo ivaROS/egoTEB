@@ -67,10 +67,20 @@ void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obsta
   robot_model_ = robot_model;
 
   if (cfg_->hcp.simple_exploration)
-    //graph_search_ = boost::shared_ptr<GraphSearchInterface>(new lrKeyPointGraph(*cfg_, this));
-    graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle));
+  {
+    if(cfg_->hcp.use_gaps)
+    {
+      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle));
+    }
+    else
+    {
+      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new lrKeyPointGraph(*cfg_, this));
+    }
+  }
   else
+  {
     graph_search_ = boost::shared_ptr<GraphSearchInterface>(new ProbRoadmapGraph(*cfg_, this));
+  }
 
   initialized_ = true;
 
@@ -243,6 +253,20 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
   TebOptPlannerContainer::iterator it_teb = tebs_.begin();
   while(it_teb != tebs_.end())
   {
+    if(cfg_->hcp.use_gaps)
+    {
+      if(*it_teb != initial_plan_teb_)
+      {
+        it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
+        ROS_DEBUG_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it is not the initial plan");
+        continue;
+      }
+      else
+      {
+        ROS_INFO_STREAM("Keeping candidate in [renewAndAnalyzeOldTebs] since it is the initial plan");
+      }
+    }
+    
     // delete Detours if there is at least one other TEB candidate left in the container
     if (delete_detours && tebs_.size()>1 && it_teb->get()->teb().detectDetoursBackwards(cfg_->hcp.detour_threshold)) //was -0.1
     {

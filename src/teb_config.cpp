@@ -127,6 +127,7 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("enable_homotopy_class_planning", hcp.enable_homotopy_class_planning, hcp.enable_homotopy_class_planning); 
   nh.param("enable_multithreading", hcp.enable_multithreading, hcp.enable_multithreading); 
   nh.param("simple_exploration", hcp.simple_exploration, hcp.simple_exploration); 
+  nh.param("use_gaps", hcp.use_gaps, hcp.use_gaps); 
   nh.param("max_number_classes", hcp.max_number_classes, hcp.max_number_classes); 
   nh.param("selection_obst_cost_scale", hcp.selection_obst_cost_scale, hcp.selection_obst_cost_scale);
   nh.param("selection_prefer_initial_plan", hcp.selection_prefer_initial_plan, hcp.selection_prefer_initial_plan);

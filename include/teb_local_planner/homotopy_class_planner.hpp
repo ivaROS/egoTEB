@@ -38,6 +38,7 @@
 
 #include <teb_local_planner/homotopy_class_planner.h>
 #include <teb_local_planner/h_signature.h>
+#include <teb_local_planner/gap_h_signature.h>
 
 namespace teb_local_planner
 {
@@ -51,6 +52,12 @@ EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter pa
   {
     HSignature3d* H = new HSignature3d(*cfg_);
     H->calculateHSignature(path_start, path_end, fun_cplx_point, obstacles, timediff_start, timediff_end);
+    return EquivalenceClassPtr(H);
+  }
+  else if(cfg_->hcp.use_gaps)
+  {
+    GapHSignature* H = new GapHSignature(*cfg_);
+    H->calculateHSignature(path_start, path_end, fun_cplx_point, obstacles);
     return EquivalenceClassPtr(H);
   }
   else

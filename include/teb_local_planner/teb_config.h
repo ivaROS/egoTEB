@@ -167,6 +167,7 @@ public:
     bool enable_homotopy_class_planning; //!< Activate homotopy class planning (Requires much more resources that simple planning, since multiple trajectories are optimized at once).
     bool enable_multithreading; //!< Activate multiple threading for planning multiple trajectories in parallel.
     bool simple_exploration; //!< If true, distinctive trajectories are explored using a simple left-right approach (pass each obstacle on the left or right side) for path generation, otherwise sample possible roadmaps randomly in a specified region between start and goal.
+    bool use_gaps;
     int max_number_classes; //!< Specify the maximum number of allowed alternative homotopy classes (limits computational effort)
     double selection_cost_hysteresis; //!< Specify how much trajectory cost must a new candidate have w.r.t. a previously selected trajectory in order to be selected (selection if new_cost < old_cost*factor).
     double selection_prefer_initial_plan; //!< Specify a cost reduction in the interval (0,1) for the trajectory in the equivalence class of the initial plan.
@@ -309,6 +310,7 @@ public:
     hcp.enable_homotopy_class_planning = true;
     hcp.enable_multithreading = true;
     hcp.simple_exploration = false;
+    hcp.use_gaps = false;
     hcp.max_number_classes = 5; 
     hcp.selection_cost_hysteresis = 1.0;
     hcp.selection_prefer_initial_plan = 0.95;
