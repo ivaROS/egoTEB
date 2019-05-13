@@ -220,15 +220,15 @@ public:
     _error[0] = penaltyBoundFromBelow(dist, cfg_->obstacles.min_obstacle_dist, cfg_->optim.penalty_epsilon);
     _error[1] = penaltyBoundFromBelow(dist, cfg_->obstacles.inflation_dist, 0.0);
 
-    if(dist < cfg_->obstacles.min_obstacle_dist + cfg_->optim.penalty_epsilon)
-    {
-      _error[0] = std::abs(1/(dist - (cfg_->obstacles.min_obstacle_dist)));
-      ROS_DEBUG_STREAM_NAMED("edges.obstacle.computeError", "dist=" << dist << "; error=" << _error[0]);
-    }
-    else
-    {
-      _error[0] = 0;
-    }
+//     if(dist < cfg_->obstacles.min_obstacle_dist + cfg_->optim.penalty_epsilon)
+//     {
+//       _error[0] = std::abs(1/(dist - (cfg_->obstacles.min_obstacle_dist)));
+//       ROS_DEBUG_STREAM_NAMED("edges.obstacle.computeError", "dist=" << dist << "; error=" << _error[0]);
+//     }
+//     else
+//     {
+//       _error[0] = 0;
+//     }
     
     ROS_ASSERT_MSG(std::isfinite(_error[0]) && std::isfinite(_error[1]), "EdgeObstacle::computeError() _error[0]=%f, _error[1]=%f\n",_error[0], _error[1]);
   }

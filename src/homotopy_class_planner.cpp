@@ -255,15 +255,15 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
   {
     if(cfg_->hcp.use_gaps)
     {
-      if(*it_teb != initial_plan_teb_)
+      if(*it_teb != best_teb_)
       {
         it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
-        ROS_DEBUG_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it is not the initial plan");
+        ROS_DEBUG_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it is not the previous best plan");
         continue;
       }
       else
       {
-        ROS_INFO_STREAM("Keeping candidate in [renewAndAnalyzeOldTebs] since it is the initial plan");
+        ROS_INFO_STREAM("Keeping candidate in [renewAndAnalyzeOldTebs] since it is the previous best plan");
       }
     }
     
@@ -380,7 +380,9 @@ void HomotopyClassPlanner::exploreEquivalenceClassesAndInitTebs(const PoseSE2& s
   
   // first process old trajectories
   renewAndAnalyzeOldTebs(false);
-
+  visualization_->publishTebContainer(tebs_, "renewed");
+  
+  
   // inject initial plan if available and not yet captured
   if (initial_plan_)
   {
@@ -392,6 +394,8 @@ void HomotopyClassPlanner::exploreEquivalenceClassesAndInitTebs(const PoseSE2& s
     initial_plan_teb_ = getInitialPlanTEB(); // this method searches for initial_plan_eq_class_ in the teb container (-> if !initial_plan_teb_)
   }
 
+  visualization_->publishTebContainer(tebs_, "initial_plan");
+  
   // now explore new homotopy classes and initialize tebs if new ones are found. The appropriate createGraph method is chosen via polymorphism.
   graph_search_->createGraph(start,goal,dist_to_obst,cfg_->hcp.obstacle_heading_threshold, start_vel);
   
