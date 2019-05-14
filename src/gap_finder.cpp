@@ -31,7 +31,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   diff.normalize();
   
   // Get vertices of gaps
-  std::vector<ego_circle::EgoCircularPoint> gap_points = egocircle_->getHierarchicalGapPoints(.5);
+  std::vector<ego_circle::EgoCircularPoint> gap_points = egocircle_->getDiscontinuityGapPoints(); //getHierarchicalGapPoints(.5);
   egocircle_->transformToGlobal(gap_points);
     
   ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
