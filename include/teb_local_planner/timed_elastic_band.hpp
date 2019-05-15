@@ -298,6 +298,8 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         
         
         addPoseAndTimeDiff(curr_point, yaw ,timestep);
+        setPoseVertexFixed(sizePoses()-1, true);
+        
       
         ++idx;
         //ROS_ASSERT_MSG(idx > 200, "Uh oh, idx got really big.  Value = %d", idx);
