@@ -81,7 +81,8 @@
 #include <boost/shared_ptr.hpp>
 
 // custom additions
-#include <pips_dwa_controller/ego_circle_cost_wrapper.h>
+#include <egocircle_utils/interface_updater.h>
+#include <teb_local_planner/egocircle_interface.h>
 
 
 namespace teb_local_planner
@@ -404,7 +405,8 @@ private:
   std::string global_frame_; //!< The frame in which the controller will run
   std::string robot_base_frame_; //!< Used as the base frame id of the robot
   
-  std::shared_ptr<ego_circle::EgoCircleCostWrapper> egocircle_wrapper_;
+  std::shared_ptr<EgoCircleInterface> egocircle_;
+  std::shared_ptr<egocircle_utils::InterfaceUpdater> egocircle_wrapper_;
     
   // flags
   bool initialized_; //!< Keeps track about the correct initialization of this class

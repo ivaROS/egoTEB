@@ -31,8 +31,15 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   diff.normalize();
   
   // Get vertices of gaps
-  std::vector<ego_circle::EgoCircularPoint> gap_points = egocircle_->getDiscontinuityGapPoints(); //getHierarchicalGapPoints(.5);
-  egocircle_->transformToGlobal(gap_points);
+  std::vector<egocircle_utils::gap_finding::Gap> gaps = egocircle_->getDiscontinuityGaps(); //getHierarchicalGapPoints(.5);
+  
+  std::vector<ego_circle::EgoCircularPoint> gap_points;
+  for(egocircle_utils::gap_finding::Gap gap : gaps)
+  {
+    gap_points.push_back(gap.getMid());
+  }
+  
+  egocircle_->toGlobal(gap_points);
     
   ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
 
@@ -166,4 +173,4 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   
 }
 
-}
+} //end namespace teb_local_planner

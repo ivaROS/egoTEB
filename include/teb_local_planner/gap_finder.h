@@ -10,7 +10,7 @@ namespace teb_local_planner
 class GapFinderGraph : public GraphSearchInterface
 {
 public:
-  GapFinderGraph(const TebConfig& cfg, HomotopyClassPlanner* hcp, std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle) : GraphSearchInterface(cfg, hcp), egocircle_(egocircle){}
+  GapFinderGraph(const TebConfig& cfg, HomotopyClassPlanner* hcp, std::shared_ptr<EgoCircleInterface> egocircle) : GraphSearchInterface(cfg, hcp), egocircle_(egocircle){}
 
   virtual ~GapFinderGraph(){}
 
@@ -32,7 +32,7 @@ public:
   virtual void createGraph(const PoseSE2& start, const PoseSE2& goal, double dist_to_obst, double obstacle_heading_threshold, const geometry_msgs::Twist* start_velocity);
   
 protected:
-  std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle_;
+  std::shared_ptr<EgoCircleInterface> egocircle_;
 };
 
 } //end namespace

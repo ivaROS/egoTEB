@@ -49,7 +49,7 @@ HomotopyClassPlanner::HomotopyClassPlanner() : cfg_(NULL), obstacles_(NULL), via
 }
 
 HomotopyClassPlanner::HomotopyClassPlanner(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model,
-                                           TebVisualizationPtr visual, const ViaPointContainer* via_points,  std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle) : initial_plan_(NULL)
+                                           TebVisualizationPtr visual, const ViaPointContainer* via_points,  std::shared_ptr<EgoCircleInterface> egocircle) : initial_plan_(NULL)
 {
   initialize(cfg, obstacles, robot_model, visual, via_points, egocircle);
 }
@@ -59,7 +59,7 @@ HomotopyClassPlanner::~HomotopyClassPlanner()
 }
 
 void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model,
-                                      TebVisualizationPtr visual, const ViaPointContainer* via_points, std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle)
+                                      TebVisualizationPtr visual, const ViaPointContainer* via_points, std::shared_ptr<EgoCircleInterface> egocircle)
 {
   cfg_ = &cfg;
   obstacles_ = obstacles;
@@ -70,7 +70,8 @@ void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obsta
   {
     if(cfg_->hcp.use_gaps)
     {
-      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle));
+      egocircle_ = egocircle;
+      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle_));
     }
     else
     {
@@ -412,8 +413,18 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const PoseSE2& start
   if (start_velocity)
     candidate->setVelocityStart(*start_velocity);
 
-  EquivalenceClassPtr H = calculateEquivalenceClass(candidate->teb().poses().begin(), candidate->teb().poses().end(), getCplxFromVertexPosePtr, obstacles_,
-                                                    candidate->teb().timediffs().begin(), candidate->teb().timediffs().end());
+  EquivalenceClassPtr H;
+  if(!cfg_->hcp.use_gaps)
+  {
+    H = calculateEquivalenceClass(candidate->teb().poses().begin(), candidate->teb().poses().end(), getCplxFromVertexPosePtr, obstacles_,
+                                  candidate->teb().timediffs().begin(), candidate->teb().timediffs().end());
+  }
+  else
+  {
+    H = calculateEquivalenceClass(candidate->teb().poses().begin(), candidate->teb().poses().end(), getCplxFromVertexPosePtr, egocircle_->getDiscontinuityGaps(),
+                                  candidate->teb().timediffs().begin(), candidate->teb().timediffs().end());
+  }
+
 
   if(addEquivalenceClassIfNew(H))
   {
@@ -735,7 +746,7 @@ bool HomotopyClassPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel
   return best->isTrajectoryFeasible(costmap_model,footprint_spec, inscribed_radius, circumscribed_radius, look_ahead_idx);
 }
 
-bool HomotopyClassPlanner::isTrajectoryFeasible(const ego_circle::EgoCircleCostImpl& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+bool HomotopyClassPlanner::isTrajectoryFeasible(const EgoCircleInterface& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
                                                 double inscribed_radius, double circumscribed_radius, int look_ahead_idx)
 {
   TebOptimalPlannerPtr best = bestTeb();

@@ -94,7 +94,7 @@ public:
     * @tparam Fun function of the form std::complex< long double > (const T& point_type)
     */
     template<typename BidirIter, typename Fun>
-    void calculateHSignature(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const ObstContainer* obstacles)
+    void calculateHSignature(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<egocircle_utils::gap_finding::Gap>& gaps)
     {
         // Do nothing
     }

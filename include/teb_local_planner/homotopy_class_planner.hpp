@@ -54,12 +54,12 @@ EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter pa
     H->calculateHSignature(path_start, path_end, fun_cplx_point, obstacles, timediff_start, timediff_end);
     return EquivalenceClassPtr(H);
   }
-  else if(cfg_->hcp.use_gaps)
-  {
-    GapHSignature* H = new GapHSignature(*cfg_);
-    H->calculateHSignature(path_start, path_end, fun_cplx_point, obstacles);
-    return EquivalenceClassPtr(H);
-  }
+//   else if(cfg_->hcp.use_gaps)
+//   {
+//     GapHSignature* H = new GapHSignature(*cfg_);
+//     H->calculateHSignature(path_start, path_end, fun_cplx_point, obstacles);
+//     return EquivalenceClassPtr(H);
+//   }
   else
   {
     HSignature* H = new HSignature(*cfg_);
@@ -68,6 +68,14 @@ EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter pa
   }
 }
 
+template<typename BidirIter, typename Fun>
+EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<egocircle_utils::gap_finding::Gap>& gaps,
+                                                                    boost::optional<TimeDiffSequence::iterator> timediff_start, boost::optional<TimeDiffSequence::iterator> timediff_end)
+{
+    GapHSignature* H = new GapHSignature(*cfg_);
+    H->calculateHSignature(path_start, path_end, fun_cplx_point, gaps);
+    return EquivalenceClassPtr(H);
+}
 
 template<typename BidirIter, typename Fun>
 TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(BidirIter path_start, BidirIter path_end, Fun fun_position, double start_orientation, double goal_orientation, const geometry_msgs::Twist* start_velocity)

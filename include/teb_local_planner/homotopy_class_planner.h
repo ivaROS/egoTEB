@@ -124,7 +124,7 @@ public:
    * @param via_points Container storing via-points (optional)
    */
   HomotopyClassPlanner(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                       TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle=nullptr);
+                       TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<EgoCircleInterface> egocircle=nullptr);
 
   /**
    * @brief Destruct the HomotopyClassPlanner.
@@ -140,7 +140,7 @@ public:
    * @param via_points Container storing via-points (optional)
    */
   void initialize(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                  TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<ego_circle::EgoCircleCostImpl> egocircle=nullptr);
+                  TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<EgoCircleInterface> egocircle=nullptr);
 
 
 
@@ -223,7 +223,7 @@ public:
   virtual bool isTrajectoryFeasible(base_local_planner::CostmapModel* costmap_model, const std::vector<geometry_msgs::Point>& footprint_spec,
                                     double inscribed_radius = 0.0, double circumscribed_radius=0.0, int look_ahead_idx=-1);
   
-  virtual bool isTrajectoryFeasible(const ego_circle::EgoCircleCostImpl& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+  virtual bool isTrajectoryFeasible(const EgoCircleInterface& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
                                     double inscribed_radius=0, double circumscribed_radius=0, int look_ahead_idx=-1);
   //@}
 
@@ -392,6 +392,10 @@ public:
   EquivalenceClassPtr calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const ObstContainer* obstacles = NULL,
                                                 boost::optional<TimeDiffSequence::iterator> timediff_start = boost::none, boost::optional<TimeDiffSequence::iterator> timediff_end = boost::none);
 
+  template<typename BidirIter, typename Fun>
+  EquivalenceClassPtr calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<egocircle_utils::gap_finding::Gap>& gaps,
+                                                boost::optional<TimeDiffSequence::iterator> timediff_start = boost::none, boost::optional<TimeDiffSequence::iterator> timediff_end = boost::none);
+  
   /**
    * @brief Read-only access to the internal trajectory container.
    * @return read-only reference to the teb container.
@@ -525,6 +529,7 @@ protected:
   EquivalenceClassContainer equivalence_classes_; //!< Store all known quivalence classes (e.g. h-signatures) to allow checking for duplicates after finding and adding new ones.
                                                                             //   The second parameter denotes whether to exclude the class from detour deletion or not (true: force keeping).
 
+  std::shared_ptr<EgoCircleInterface> egocircle_;
   boost::shared_ptr<GraphSearchInterface> graph_search_;
 
   ros::Time last_eq_class_switching_time_; //!< Store the time at which the equivalence class changed recently

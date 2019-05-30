@@ -283,7 +283,7 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         if(max_acc_x)
         {
           timestep_acc = sqrt(2*sub_diff_norm/(*max_acc_x)); // constant acceleration
-          if (timestep_vel < timestep_acc && max_acc_x) // pretty sure the '&& max_acc_x' term is redundant. also, how can this not be true? the time to travel a distance from stop at max acceleration vs the time at max vel
+          if (timestep_vel < timestep_acc && max_acc_x)
           {
             timestep = timestep_acc;
           }
@@ -298,7 +298,7 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         
         
         addPoseAndTimeDiff(curr_point, yaw ,timestep);
-        setPoseVertexFixed(sizePoses()-1, true);
+        //setPoseVertexFixed(sizePoses()-1, true);
         
       
         ++idx;

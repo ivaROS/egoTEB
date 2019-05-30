@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   visualization_msgs
-  pips_dwa_implementation
+  egocircle_utils
 )
 message(STATUS "System: ${CMAKE_SYSTEM}")
 ## System dependencies are found with CMake's conventions
@@ -160,6 +160,7 @@ catkin_package(
 	tf
 	tf_conversions
 	visualization_msgs
+	egocircle_utils
   DEPENDS SUITESPARSE G2O
 )
 
@@ -191,6 +192,7 @@ add_library(teb_local_planner
    src/gap_finder.cpp
    src/egocircle_obstacles.cpp
    src/graph_interpolation.cpp
+   src/egocircle_interface.cpp
 )
 
 # Dynamic reconfigure: make sure configure headers are built before any node using them

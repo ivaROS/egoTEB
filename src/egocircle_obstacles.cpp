@@ -9,7 +9,6 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
   if (cfg_.obstacles.include_egocircle_obstacles)
   //if(true)
   {  
-    const auto& egocircle = *egocircle_wrapper_->getImpl();
     Eigen::Vector2d robot_orient = robot_pose_.orientationUnitVec();
     egocircle_wrapper_->update();
     std_msgs::Header target_header;
@@ -19,31 +18,10 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
     
     if(egocircle_wrapper_->isReady(target_header))
     {
-      egocircle_wrapper_->setInflationRadius(robot_inscribed_radius_);
-      std::vector<ego_circle::EgoCircularPoint> points = egocircle.getDecimatedEgoCircularPoints();//getLocalEgoCircularPoints();
-      egocircle.transformToGlobal(points);
+      egocircle_->setInflationRadius(robot_inscribed_radius_);
+      std::vector<ego_circle::EgoCircularPoint> points = egocircle_->getDecimatedEgoCircularPoints();//getLocalEgoCircularPoints();
+      egocircle_->toGlobal(points);
             
-      
-//       Eigen::Affine3d obstacle_to_map_eig;
-//       try 
-//       {
-//         std_msgs::Header source_header = egocircle_wrapper_->getCurrentHeader();
-//         
-//         tf::StampedTransform obstacle_to_map;
-//         tf_->waitForTransform(target_header.frame_id, target_header.stamp,
-//                               source_header.frame_id, source_header.stamp,
-//                               target_header.frame_id, ros::Duration(0.5));
-//         tf_->lookupTransform(target_header.frame_id, target_header.stamp,
-//                              source_header.frame_id, source_header.stamp,
-//                              target_header.frame_id, obstacle_to_map);
-//         tf::transformTFToEigen(obstacle_to_map, obstacle_to_map_eig);
-//       }
-//       catch (tf::TransformException ex)
-//       {
-//         ROS_ERROR("%s",ex.what());
-//         obstacle_to_map_eig.setIdentity();
-//       }
-      
       for(auto point : points)
       {
             Eigen::Vector2d obs;

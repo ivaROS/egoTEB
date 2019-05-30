@@ -1253,7 +1253,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel* c
   return true;
 }
 
-bool TebOptimalPlanner::isTrajectoryFeasible(const ego_circle::EgoCircleCostImpl& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+bool TebOptimalPlanner::isTrajectoryFeasible(const EgoCircleInterface& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
                                              double inscribed_radius, double circumscribed_radius, int look_ahead_idx)
 {
   if (look_ahead_idx < 0 || look_ahead_idx >= teb().sizePoses())
