@@ -129,6 +129,12 @@ public:
     int costmap_converter_rate; //!< The rate that defines how often the costmap_converter plugin processes the current costmap (the value should not be much higher than the costmap update rate)
   } obstacles; //!< Obstacle related parameters
 
+  struct Gaps
+  {
+    double gap_boundary_exponent;
+    double gap_boundary_threshold;
+    double gap_boundary_ratio;
+  } gaps;
   
   //! Optimization related parameters
   struct Optimization
@@ -157,6 +163,7 @@ public:
     double weight_dynamic_obstacle_inflation; //!< Optimization weight for the inflation penalty of dynamic obstacles (should be small)
     double weight_viapoint; //!< Optimization weight for minimizing the distance to via-points
     double weight_prefer_rotdir; //!< Optimization weight for preferring a specific turning direction (-> currently only activated if an oscillation is detected, see 'oscillation_recovery'
+    double weight_gap;
     
     double weight_adapt_factor; //!< Some special weights (currently 'weight_obstacle') are repeatedly scaled by this factor in each outer TEB iteration (weight_new = weight_old*factor); Increasing weights iteratively instead of setting a huge value a-priori leads to better numerical conditions of the underlying optimization problem.
   } optim; //!< Optimization related parameters
@@ -279,6 +286,12 @@ public:
     obstacles.costmap_converter_spin_thread = true;
     obstacles.costmap_converter_rate = 5;
     
+    
+    // Gaps
+    
+    gaps.gap_boundary_exponent = 1;
+    gaps.gap_boundary_threshold=.1;
+    gaps.gap_boundary_ratio=.5;
     // Optimization
     
     optim.no_inner_iterations = 5;

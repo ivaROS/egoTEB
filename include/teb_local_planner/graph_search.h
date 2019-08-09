@@ -138,7 +138,8 @@ protected:
    * @param start_velocity start velocity (optional)
    */
   void DepthFirst(HcGraph& g, std::vector<HcGraphVertexType>& visited, const HcGraphVertexType& goal, double start_orientation, double goal_orientation, const geometry_msgs::Twist* start_velocity);
-
+  //void DepthFirstNI(HcGraph& g, std::vector<HcGraphVertexType>& visited, const HcGraphVertexType& goal, double start_orientation, double goal_orientation, const geometry_msgs::Twist* start_velocity);
+  
   std::vector<geometry_msgs::PoseStamped> InterpolateGraph(const HcGraph& g, const std::vector<HcGraphVertexType>& visited, double start_orientation, double goal_orientation, double diststep);
 
 protected:

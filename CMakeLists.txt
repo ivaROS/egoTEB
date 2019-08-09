@@ -23,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
   visualization_msgs
   egocircle_utils
+  turtlebot_trajectory_testing
+  turtlebot_trajectory_functions
 )
 message(STATUS "System: ${CMAKE_SYSTEM}")
 ## System dependencies are found with CMake's conventions
@@ -193,6 +195,8 @@ add_library(teb_local_planner
    src/egocircle_obstacles.cpp
    src/graph_interpolation.cpp
    src/egocircle_interface.cpp
+   src/edge_gap.cpp
+   #src/ni_initialization.cpp
 )
 
 # Dynamic reconfigure: make sure configure headers are built before any node using them

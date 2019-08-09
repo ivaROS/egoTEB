@@ -63,6 +63,8 @@
 #include <teb_local_planner/equivalence_relations.h>
 #include <teb_local_planner/graph_search.h>
 
+#include <turtlebot_trajectory_testing/turtlebot_trajectory_tester.h>
+
 
 namespace teb_local_planner
 {
@@ -124,7 +126,7 @@ public:
    * @param via_points Container storing via-points (optional)
    */
   HomotopyClassPlanner(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                       TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<EgoCircleInterface> egocircle=nullptr);
+                       TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, const EgoCircleInterface* egocircle=nullptr);
 
   /**
    * @brief Destruct the HomotopyClassPlanner.
@@ -140,7 +142,7 @@ public:
    * @param via_points Container storing via-points (optional)
    */
   void initialize(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                  TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, std::shared_ptr<EgoCircleInterface> egocircle=nullptr);
+                  TebVisualizationPtr visualization = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, const EgoCircleInterface* egocircle=nullptr);
 
 
 
@@ -223,7 +225,7 @@ public:
   virtual bool isTrajectoryFeasible(base_local_planner::CostmapModel* costmap_model, const std::vector<geometry_msgs::Point>& footprint_spec,
                                     double inscribed_radius = 0.0, double circumscribed_radius=0.0, int look_ahead_idx=-1);
   
-  virtual bool isTrajectoryFeasible(const EgoCircleInterface& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+  virtual bool isTrajectoryFeasible(const std::vector<geometry_msgs::Point>& footprint_spec,
                                     double inscribed_radius=0, double circumscribed_radius=0, int look_ahead_idx=-1);
   //@}
 
@@ -293,6 +295,9 @@ public:
    */
   template<typename BidirIter, typename Fun>
   TebOptimalPlannerPtr addAndInitNewTeb(BidirIter path_start, BidirIter path_end, Fun fun_position, double start_orientation, double goal_orientation, const geometry_msgs::Twist* start_velocity);
+
+  template<typename BidirIter, typename Fun>
+  TebOptimalPlannerPtr addAndInitNewTebNI(BidirIter path_start, BidirIter path_end, Fun fun_position, double start_orientation, double goal_orientation, const geometry_msgs::Twist* start_velocity);
 
   /**
    * @brief Add a new Teb to the internal trajectory container, if this teb constitutes a new equivalence class. Initialize it with a simple straight line between a given start and goal
@@ -393,7 +398,7 @@ public:
                                                 boost::optional<TimeDiffSequence::iterator> timediff_start = boost::none, boost::optional<TimeDiffSequence::iterator> timediff_end = boost::none);
 
   template<typename BidirIter, typename Fun>
-  EquivalenceClassPtr calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<egocircle_utils::gap_finding::Gap>& gaps,
+  EquivalenceClassPtr calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<std::vector<ego_circle::EgoCircularPoint> >& gaps,
                                                 boost::optional<TimeDiffSequence::iterator> timediff_start = boost::none, boost::optional<TimeDiffSequence::iterator> timediff_end = boost::none);
   
   /**
@@ -528,8 +533,9 @@ protected:
 
   EquivalenceClassContainer equivalence_classes_; //!< Store all known quivalence classes (e.g. h-signatures) to allow checking for duplicates after finding and adding new ones.
                                                                             //   The second parameter denotes whether to exclude the class from detour deletion or not (true: force keeping).
-
-  std::shared_ptr<EgoCircleInterface> egocircle_;
+  
+  std::shared_ptr<turtlebot_trajectory_testing::GenAndTest> traj_tester_;
+  const EgoCircleInterface* egocircle_;
   boost::shared_ptr<GraphSearchInterface> graph_search_;
 
   ros::Time last_eq_class_switching_time_; //!< Store the time at which the equivalence class changed recently

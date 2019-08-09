@@ -36,6 +36,25 @@ namespace teb_local_planner
       decimator_ = std::make_shared<egocircle_utils::Decimator>(*container_, inflation_radius_);
       gaps_ = egocircle_utils::gap_finding::getDiscontinuityGaps(*inflator_);
       
+      global_gaps_.clear();
+      int num_gaps = gaps_.size();
+      
+      for(int i = 0; i < num_gaps; ++i)
+      {
+        std::vector<ego_circle::EgoCircularPoint> gap_vec;
+        
+        egocircle_utils::gap_finding::Gap& gap = gaps_[i];
+        ego_circle::EgoCircularPoint point = gap.start;
+        toGlobal(point);
+        gap_vec.push_back(point);
+        
+        point = gap.end;
+        toGlobal(point);
+        gap_vec.push_back(point);
+        
+        global_gaps_.push_back(gap_vec);
+      }
+      
       if(inflated_egocircle_pub_.getNumSubscribers()>0)
       {
         sensor_msgs::LaserScanPtr inflated_scan = inflator_->getMsg();
@@ -115,26 +134,15 @@ namespace teb_local_planner
       return gaps_;
     }
     
+    const std::vector<std::vector<ego_circle::EgoCircularPoint> >& EgoCircleInterface::getGlobalGaps() const
+    {
+      return global_gaps_;
+    }
+    
     const std::vector<ego_circle::EgoCircularPoint>& EgoCircleInterface::getDecimatedEgoCircularPoints() const
     {
       return decimator_->getPoints();
     }
-    
-//     void EgoCircleInterface::transformPoint(ego_circle::EgoCircularPoint& point) const
-//     {
-//       transformer_.toLocal(point);
-//     }
-//     
-//     void EgoCircleInterface::transformToGlobal(ego_circle::EgoCircularPoint& point) const
-//     {
-//       transformer_.toGlobal(point);
-//     }
-//     
-//     void EgoCircleInterface::transformToGlobal(std::vector<ego_circle::EgoCircularPoint>& points) const
-//     {
-//       transformer_.toGlobal(points);
-//     }
-    
 
 }
 

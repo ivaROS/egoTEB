@@ -69,7 +69,7 @@ EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter pa
 }
 
 template<typename BidirIter, typename Fun>
-EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<egocircle_utils::gap_finding::Gap>& gaps,
+EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<std::vector<ego_circle::EgoCircularPoint> >& gaps,
                                                                     boost::optional<TimeDiffSequence::iterator> timediff_start, boost::optional<TimeDiffSequence::iterator> timediff_end)
 {
     GapHSignature* H = new GapHSignature(*cfg_);

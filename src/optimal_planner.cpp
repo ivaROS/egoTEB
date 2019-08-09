@@ -51,9 +51,9 @@ TebOptimalPlanner::TebOptimalPlanner() : cfg_(NULL), obstacles_(NULL), via_point
 {    
 }
   
-TebOptimalPlanner::TebOptimalPlanner(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, TebVisualizationPtr visual, const ViaPointContainer* via_points)
+TebOptimalPlanner::TebOptimalPlanner(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, TebVisualizationPtr visual, const ViaPointContainer* via_points, const EgoCircleInterface* egocircle)
 {    
-  initialize(cfg, obstacles, robot_model, visual, via_points);
+  initialize(cfg, obstacles, robot_model, visual, via_points, egocircle);
 }
 
 TebOptimalPlanner::~TebOptimalPlanner()
@@ -66,10 +66,11 @@ TebOptimalPlanner::~TebOptimalPlanner()
   //g2o::HyperGraphActionLibrary::destroy();
 }
 
-void TebOptimalPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, TebVisualizationPtr visual, const ViaPointContainer* via_points)
+void TebOptimalPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, TebVisualizationPtr visual, const ViaPointContainer* via_points, const EgoCircleInterface* egocircle)
 {    
   // init optimizer (set solver and block ordering settings)
   optimizer_ = initOptimizer();
+  egocircle_ = egocircle;
   
   cfg_ = &cfg;
   obstacles_ = obstacles;
@@ -138,6 +139,7 @@ void TebOptimalPlanner::registerG2OTypes()
   factory->registerType("EDGE_DYNAMIC_OBSTACLE", new g2o::HyperGraphElementCreator<EdgeDynamicObstacle>);
   factory->registerType("EDGE_VIA_POINT", new g2o::HyperGraphElementCreator<EdgeViaPoint>);
   factory->registerType("EDGE_PREFER_ROTDIR", new g2o::HyperGraphElementCreator<EdgePreferRotDir>);
+  factory->registerType("EDGE_GAP", new g2o::HyperGraphElementCreator<EdgeGap>);
   return;
 }
 
@@ -975,6 +977,12 @@ void TebOptimalPlanner::AddEdgesPreferRotDir()
   }
 }
 
+
+void TebOptimalPlanner::AddEdgesGaps()
+{
+  
+}
+
 void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoint_cost_scale, bool alternative_time_cost)
 { 
   ros::WallTime start_time = ros::WallTime::now();
@@ -1253,7 +1261,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel* c
   return true;
 }
 
-bool TebOptimalPlanner::isTrajectoryFeasible(const EgoCircleInterface& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+bool TebOptimalPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Point>& footprint_spec,
                                              double inscribed_radius, double circumscribed_radius, int look_ahead_idx)
 {
   if (look_ahead_idx < 0 || look_ahead_idx >= teb().sizePoses())
@@ -1265,7 +1273,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const EgoCircleInterface& ego_costs
     //  return false;
     
     ego_circle::EgoCircularPoint ec_point(teb().Pose(i).x(), teb().Pose(i).y());
-    float min_dist = ego_costs_.getMinDist(ec_point);
+    float min_dist = egocircle_->getMinDist(ec_point);
     
     ROS_DEBUG_STREAM("[" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
     
@@ -1298,7 +1306,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const EgoCircleInterface& ego_costs
           //if ( costmap_model->footprintCost(center.x(), center.y(), center.theta(), footprint_spec, inscribed_radius, circumscribed_radius) < 0 )
           //  return false;
           ego_circle::EgoCircularPoint ec_point(center.x(), center.y());
-          float min_dist = ego_costs_.getMinDist(ec_point);
+          float min_dist = egocircle_->getMinDist(ec_point);
           ROS_INFO_STREAM("Next point too far away; testing another pose [" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
           
           

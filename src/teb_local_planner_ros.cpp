@@ -158,12 +158,12 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     // create the planner instance
     if (cfg_.hcp.enable_homotopy_class_planning)
     {
-      planner_ = boost::make_shared<HomotopyClassPlanner>(cfg_, &obstacles_, robot_model, visualization_, &via_points_, egocircle_);
+      planner_ = boost::make_shared<HomotopyClassPlanner>(cfg_, &obstacles_, robot_model, visualization_, &via_points_, egocircle_.get());
       ROS_INFO("Parallel planning in distinctive topologies enabled.");
     }
     else
     {
-      planner_ = boost::make_shared<TebOptimalPlanner>(cfg_, &obstacles_, robot_model, visualization_, &via_points_);
+      planner_ = boost::make_shared<TebOptimalPlanner>(cfg_, &obstacles_, robot_model, visualization_, &via_points_, egocircle_.get());
       ROS_INFO("Parallel planning in distinctive topologies disabled.");
     }
     
@@ -359,7 +359,7 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   bool feasible=false;
   if (cfg_.obstacles.include_egocircle_obstacles)
   {  
-    feasible = planner_->isTrajectoryFeasible(*egocircle_, footprint_spec_, robot_inscribed_radius_, robot_circumscribed_radius, cfg_.trajectory.feasibility_check_no_poses);
+    feasible = planner_->isTrajectoryFeasible(footprint_spec_, robot_inscribed_radius_, robot_circumscribed_radius, cfg_.trajectory.feasibility_check_no_poses);
   }
   else
   {

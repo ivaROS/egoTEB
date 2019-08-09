@@ -45,7 +45,9 @@
   <depend>visualization_msgs</depend>
   
   <depend>egocircle_utils</depend>
-
+  <depend>turtlebot_trajectory_testing</depend>
+  <depend>turtlebot_trajectory_functions</depend>
+  
   <export>
     <nav_core plugin="${prefix}/teb_local_planner_plugin.xml"/>
   </export>

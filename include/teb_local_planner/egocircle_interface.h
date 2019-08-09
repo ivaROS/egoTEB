@@ -13,7 +13,8 @@
 
 namespace teb_local_planner
 {
-  class EgoCircleInterface: public egocircle_utils::UpdateableInterface//, public egocircle_utils::Transformer
+  using GlobalGap = std::vector<ego_circle::EgoCircularPoint>;
+  class EgoCircleInterface: public egocircle_utils::UpdateableInterface
   {
   public:
     
@@ -41,13 +42,9 @@ namespace teb_local_planner
     
     const std::vector<egocircle_utils::gap_finding::Gap>& getDiscontinuityGaps() const;
     
+    const std::vector<GlobalGap>& getGlobalGaps() const;
+    
     const std::vector<ego_circle::EgoCircularPoint>& getDecimatedEgoCircularPoints() const;
-/*    
-    void transformPoint(ego_circle::EgoCircularPoint& point) const;
-    
-    void transformToGlobal(ego_circle::EgoCircularPoint& point) const;
-    
-    void transformToGlobal(std::vector<ego_circle::EgoCircularPoint>& points) const;*/
     
     static constexpr const char* DEFAULT_NAME="ego_circle_cost_impl";
     
@@ -60,6 +57,7 @@ namespace teb_local_planner
     std::shared_ptr<egocircle_utils::Decimator> decimator_;
 //     egocircle_utils::Transformer transformer_;
     std::vector<egocircle_utils::gap_finding::Gap> gaps_;
+    std::vector<GlobalGap> global_gaps_;
     
     std::string name_;    
     

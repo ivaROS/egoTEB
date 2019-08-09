@@ -68,6 +68,7 @@
 #include <teb_local_planner/g2o_types/edge_dynamic_obstacle.h>
 #include <teb_local_planner/g2o_types/edge_via_point.h>
 #include <teb_local_planner/g2o_types/edge_prefer_rotdir.h>
+#include <teb_local_planner/g2o_types/edge_gap.h>
 
 // messages
 #include <nav_msgs/Path.h>
@@ -125,7 +126,7 @@ public:
    * @param via_points Container storing via-points (optional)
    */
   TebOptimalPlanner(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                    TebVisualizationPtr visual = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL);
+                    TebVisualizationPtr visual = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, const EgoCircleInterface* egocircle = NULL);
   
   /**
    * @brief Destruct the optimal planner.
@@ -141,7 +142,7 @@ public:
     * @param via_points Container storing via-points (optional)
     */
   void initialize(const TebConfig& cfg, ObstContainer* obstacles = NULL, RobotFootprintModelPtr robot_model = boost::make_shared<PointRobotFootprint>(),
-                  TebVisualizationPtr visual = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL);
+                  TebVisualizationPtr visual = TebVisualizationPtr(), const ViaPointContainer* via_points = NULL, const EgoCircleInterface* egocircle = NULL);
   
   
 
@@ -508,7 +509,7 @@ public:
   virtual bool isTrajectoryFeasible(base_local_planner::CostmapModel* costmap_model, const std::vector<geometry_msgs::Point>& footprint_spec, double inscribed_radius = 0.0,
           double circumscribed_radius=0.0, int look_ahead_idx=-1);
   
-  virtual bool isTrajectoryFeasible(const EgoCircleInterface& ego_costs_, const std::vector<geometry_msgs::Point>& footprint_spec,
+  virtual bool isTrajectoryFeasible(const std::vector<geometry_msgs::Point>& footprint_spec,
                                                double inscribed_radius=0, double circumscribed_radius=0, int look_ahead_idx=-1);
   
   /**
@@ -673,6 +674,8 @@ protected:
    */
   void AddEdgesPreferRotDir(); 
   
+  
+  void AddEdgesGaps();
   //@}
   
   
@@ -687,6 +690,7 @@ protected:
   const TebConfig* cfg_; //!< Config class that stores and manages all related parameters
   ObstContainer* obstacles_; //!< Store obstacles that are relevant for planning
   const ViaPointContainer* via_points_; //!< Store via points for planning
+  const EgoCircleInterface* egocircle_;
   
   double cost_; //!< Store cost value of the current hyper-graph
   RotType prefer_rotdir_; //!< Store whether to prefer a specific initial rotation in optimization (might be activated in case the robot oscillates)

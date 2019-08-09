@@ -94,10 +94,36 @@ public:
     * @tparam Fun function of the form std::complex< long double > (const T& point_type)
     */
     template<typename BidirIter, typename Fun>
-    void calculateHSignature(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<egocircle_utils::gap_finding::Gap>& gaps)
+    void calculateHSignature(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<std::vector<ego_circle::EgoCircularPoint> >& gaps)
     {
-        // Do nothing
+
+      std::advance(path_end, -1); // reduce path_end by 1 (since we check line segments between those path points
+      
+      typedef std::complex<long double> cplx;
+      // guess map size (only a really really coarse guess is required
+      // use distance from start to goal as distance to each direction
+      // TODO: one could move the map determination outside this function, since it remains constant for the whole planning interval
+      cplx start = fun_cplx_point(*path_start);
+      cplx end = fun_cplx_point(*path_end); // path_end points to the last point now after calling std::advance before
+      cplx delta = end-start;
+      cplx normal(-delta.imag(), delta.real());
+
+      const int num_gaps = gaps.size();
+      
+      // iterate path
+      while(path_start != path_end)
+      {
+        cplx z1 = fun_cplx_point(*path_start);
+        cplx z2 = fun_cplx_point(*boost::next(path_start));
+        
+        for (std::size_t l=0; l<num_gaps; ++l) // iterate all obstacles
+        {
+          
+        }
+        ++path_start;
+      }
     }
+
 
 
    /**

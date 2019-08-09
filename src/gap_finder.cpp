@@ -31,15 +31,17 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   diff.normalize();
   
   // Get vertices of gaps
-  std::vector<egocircle_utils::gap_finding::Gap> gaps = egocircle_->getDiscontinuityGaps(); //getHierarchicalGapPoints(.5);
+//   std::vector<egocircle_utils::gap_finding::Gap> gaps = egocircle_->getDiscontinuityGaps(); //getHierarchicalGapPoints(.5);
+//   
+//   std::vector<ego_circle::EgoCircularPoint> gap_points;
+//   for(egocircle_utils::gap_finding::Gap gap : gaps)
+//   {
+//     gap_points.push_back(gap.getMid());
+//   }
+//   
+//   egocircle_->toGlobal(gap_points);
   
-  std::vector<ego_circle::EgoCircularPoint> gap_points;
-  for(egocircle_utils::gap_finding::Gap gap : gaps)
-  {
-    gap_points.push_back(gap.getMid());
-  }
-  
-  egocircle_->toGlobal(gap_points);
+  std::vector<GlobalGap> gap_points = egocircle_->getGlobalGaps();
     
   ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
 
@@ -47,9 +49,11 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   for (int i=0; i < gap_points.size(); ++i)
   {
     Eigen::Vector2d sample;
+    auto gap_left = gap_points[i][0];
+    auto gap_right = gap_points[i][1];
     
-    sample(0)=gap_points[i].x;
-    sample(1)=gap_points[i].y;
+    sample(0)=(gap_left.x+gap_right.x)/2;
+    sample(1)=(gap_left.y+gap_right.y)/2;
     
     ROS_INFO_STREAM("Gap #" << i << ": [" << sample(0) << "," << sample(1) << "]"); 
     
@@ -168,6 +172,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   /// Find all paths between start and goal!
   std::vector<HcGraphVertexType> visited;
   visited.push_back(start_vtx);
+  //DepthFirstNI(graph_,visited,goal_vtx, start.theta(), goal.theta(), start_velocity);
   DepthFirst(graph_,visited,goal_vtx, start.theta(), goal.theta(), start_velocity);
   ROS_INFO_STREAM("Finished depth first search.");
   

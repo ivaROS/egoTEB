@@ -254,6 +254,9 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   hcp.visualize_hc_graph = cfg.visualize_hc_graph;
   hcp.visualize_with_time_as_z_axis_scale = cfg.visualize_with_time_as_z_axis_scale;
   
+  gaps.gap_boundary_ratio = cfg.gap_boundary_ratio;
+  gaps.gap_boundary_threshold = cfg.gap_boundary_threshold;
+  gaps.gap_boundary_exponent = cfg.gap_boundary_exponent;
   // Recovery
   
   recovery.shrink_horizon_backup = cfg.shrink_horizon_backup;

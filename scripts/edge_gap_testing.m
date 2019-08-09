@@ -11,7 +11,7 @@ hold off
 
 dists = -1:.01:1;
 
-figure(3)
+figure(2)
 costs = getCost(dists, 1, 0);
 plot(dists, costs, '-b')
 costs = getCost(dists, 2, 0);
@@ -19,7 +19,7 @@ hold on
 plot(dists, costs, '-r')
 hold off
 
-figure(4)
+figure(3)
 costs = getCost(dists, 1, .1);
 plot(dists, costs, '-b')
 costs = getCost(dists, 1, .2);
@@ -27,24 +27,51 @@ hold on
 plot(dists, costs, '-r')
 hold off
 
-figure(5)
+figure(4)
 gap_left = [4,2];
-gap_right = [5,2];
+gap_right = [5,-1];
 
-left_norm = getLeftBorderNormal(gap_left)
-right_norm = getRightBorderNormal(gap_right)
+pose = [3,-.25]
 
+plot(gap_left(1), gap_left(2), '*r')
+hold on
+plot(gap_right(1), gap_right(2), '*r')
+
+line([0, gap_left(1)],[0, gap_left(2)])
+line([0, gap_right(1)],[0, gap_right(2)])
+
+left_norm = getLeftBorderNormal(gap_left);
+right_norm = getRightBorderNormal(gap_right);
+
+line([0, left_norm(1)],[0, left_norm(2)], 'Color','green','LineStyle','--')
+line([0, right_norm(1)],[0, right_norm(2)], 'Color','green','LineStyle','--')
+
+plot(pose(1), pose(2), '*k')
+
+ldot = dot(pose, left_norm)
+rdot = dot(pose, right_norm)
+
+epsilon = .1;
+lcost = getCost(ldot, 1, epsilon)
+rcost = getCost(rdot, 1, epsilon)
+
+%annotation('arrow', [0, .2], [0, 0]);
+axis equal
+
+hold off
 
 function [v] = getLeftBorderNormal(left_edge)
-    v=zeros(size(left_edge))
-    v(1) = -left_edge(2)
-    v(2) = left_edge(1)
+    v=zeros(size(left_edge));
+    v(1) = -left_edge(2);
+    v(2) = left_edge(1);
+    v = v/(norm(v));
 end
 
 function [v] = getRightBorderNormal(right_edge)
-    v=zeros(size(right_edge))
-    v(1) = right_edge(2)
-    v(2) = -right_edge(1)
+    v=zeros(size(right_edge));
+    v(1) = right_edge(2);
+    v(2) = -right_edge(1);
+    v = v/(norm(v));
 end
 
 function [p] = getCost(dotprod, power, epsilon)
