@@ -82,24 +82,26 @@ figure(6)
 xlim(XL)
 ylim(YL)
 
-xset = min(XL):.01:max(XL);
-yset = min(YL):.01:max(YL);
+resolution = .1;
+
+xset = min(XL):resolution:max(XL);
+yset = min(YL):resolution:max(YL);
 [xg,yg] = meshgrid(xset,yset);
 
 poses = [reshape(xg, 1, []); reshape(yg, 1, [])];
-costs = posesToCost(poses, gap_left, gap_right, .1, 1);
+costs = posesToCost(poses, gap_left, gap_right, .1, 2);
 
-costs = reshape(costs, size(xg));
+shapedcosts = reshape(costs, size(xg));
 
 colormap('hsv')
 %set(gca,'YDir','normal')
 
-imagesc('XData', poses(1,:), 'YData', poses(2,:), 'CData', costs)
+imagesc('XData', poses(1,:), 'YData', poses(2,:), 'CData', shapedcosts)
 %imagesc(flipud(poses(1,:)), flipud(poses(2,:)), flipud(costs))
 colorbar
 
 figure(7)
-surf(xg, yg, costs)
+surf(xg, yg, shapedcosts, 'FaceAlpha', .2, 'FaceColor', 'interp')
 
 
 function [v] = posesToCost(poses, gap_left, gap_right, epsilon, power)
