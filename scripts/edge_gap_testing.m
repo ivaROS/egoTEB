@@ -19,6 +19,7 @@ hold on
 plot(dists, costs, '-r')
 hold off
 
+
 figure(3)
 costs = getCost(dists, 1, .1);
 plot(dists, costs, '-b')
@@ -27,11 +28,17 @@ hold on
 plot(dists, costs, '-r')
 hold off
 
+
 figure(4)
 gap_left = [4,2];
 gap_right = [5,-1];
 
-pose = [3,-.25]
+pose = [3, -.25];
+
+poses_y = -1:.05:2;
+poses = zeros(2, size(poses_y,2));
+poses(2,:) = poses_y;
+poses(1,:) = 3;
 
 plot(gap_left(1), gap_left(2), '*r')
 hold on
@@ -46,19 +53,67 @@ right_norm = getRightBorderNormal(gap_right);
 line([0, left_norm(1)],[0, left_norm(2)], 'Color','green','LineStyle','--')
 line([0, right_norm(1)],[0, right_norm(2)], 'Color','green','LineStyle','--')
 
-plot(pose(1), pose(2), '*k')
+plot(poses(1,:), poses(2,:), '*k')
 
-ldot = dot(pose, left_norm)
-rdot = dot(pose, right_norm)
+ldot = dot(pose, left_norm);
+rdot = dot(pose, right_norm);
+
+ldot = left_norm * poses;
+rdot = right_norm * poses;
 
 epsilon = .1;
-lcost = getCost(ldot, 1, epsilon)
-rcost = getCost(rdot, 1, epsilon)
+lcost = getCost(ldot, 1, epsilon);
+rcost = getCost(rdot, 1, epsilon);
+
+XL = get(gca, 'XLim')
+YL = get(gca, 'YLim')
 
 %annotation('arrow', [0, .2], [0, 0]);
 axis equal
-
 hold off
+
+
+figure(5)
+plot(poses(2,:), lcost, '--g')
+hold on
+plot(poses(2,:), rcost, '--r')
+
+figure(6)
+xlim(XL)
+ylim(YL)
+
+xset = min(XL):.01:max(XL);
+yset = min(YL):.01:max(YL);
+[xg,yg] = meshgrid(xset,yset);
+
+poses = [reshape(xg, 1, []); reshape(yg, 1, [])];
+costs = posesToCost(poses, gap_left, gap_right, .1, 1);
+
+costs = reshape(costs, size(xg));
+
+colormap('hsv')
+%set(gca,'YDir','normal')
+
+imagesc('XData', poses(1,:), 'YData', poses(2,:), 'CData', costs)
+%imagesc(flipud(poses(1,:)), flipud(poses(2,:)), flipud(costs))
+colorbar
+
+figure(7)
+surf(xg, yg, costs)
+
+
+function [v] = posesToCost(poses, gap_left, gap_right, epsilon, power)
+
+    left_norm = getLeftBorderNormal(gap_left);
+    right_norm = getRightBorderNormal(gap_right);
+
+    ldot = left_norm * poses;
+    rdot = right_norm * poses;
+
+    lcost = getCost(ldot, power, epsilon);
+    rcost = getCost(rdot, power, epsilon);
+    v = max(lcost, rcost);
+end
 
 function [v] = getLeftBorderNormal(left_edge)
     v=zeros(size(left_edge));
