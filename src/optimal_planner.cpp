@@ -51,9 +51,9 @@ TebOptimalPlanner::TebOptimalPlanner() : cfg_(NULL), obstacles_(NULL), via_point
 {    
 }
   
-TebOptimalPlanner::TebOptimalPlanner(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, TebVisualizationPtr visual, const ViaPointContainer* via_points, const EgoCircleInterface* egocircle)
+TebOptimalPlanner::TebOptimalPlanner(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, const EgoCircleInterface* egocircle, TebVisualizationPtr visual, const ViaPointContainer* via_points)
 {    
-  initialize(cfg, obstacles, robot_model, visual, via_points, egocircle);
+  initialize(cfg, obstacles, robot_model, egocircle, visual, via_points);
 }
 
 TebOptimalPlanner::~TebOptimalPlanner()
@@ -66,7 +66,7 @@ TebOptimalPlanner::~TebOptimalPlanner()
   //g2o::HyperGraphActionLibrary::destroy();
 }
 
-void TebOptimalPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, TebVisualizationPtr visual, const ViaPointContainer* via_points, const EgoCircleInterface* egocircle)
+void TebOptimalPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model, const EgoCircleInterface* egocircle, TebVisualizationPtr visual, const ViaPointContainer* via_points)
 {    
   // init optimizer (set solver and block ordering settings)
   optimizer_ = initOptimizer();
@@ -341,6 +341,9 @@ bool TebOptimalPlanner::buildGraph(double weight_multiplier)
 
     
   AddEdgesPreferRotDir();
+  
+  if(cfg_->hcp.use_gaps)
+    AddEdgesGaps();
   
   ROS_INFO_STREAM_NAMED("timing", "[buildGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
   
@@ -957,7 +960,7 @@ void TebOptimalPlanner::AddEdgesPreferRotDir()
     return;
   }
 
-  // create edge for satisfiying kinematic constraints
+  // create edge for satisfying kinematic constraints
   Eigen::Matrix<double,1,1> information_rotdir;
   information_rotdir.fill(cfg_->optim.weight_prefer_rotdir);
   
@@ -980,7 +983,24 @@ void TebOptimalPlanner::AddEdgesPreferRotDir()
 
 void TebOptimalPlanner::AddEdgesGaps()
 {
+  Eigen::Vector2d start_pos = teb_.PoseVertex(0)->pose().position();
   
+  // create edge for staying within gaps
+  Eigen::Matrix<double,1,1> information_gap;
+  information_gap.fill(cfg_->optim.weight_gap);
+  
+  for(GlobalGap gap : egocircle_->getGlobalGaps())
+  {
+    for (int i=0; i < teb_.sizePoses()-1; i++) // ignore twiced start only
+    {
+      EdgeGap* gap_edge = new EdgeGap;
+      gap_edge->setVertex(0,teb_.PoseVertex(i));
+      gap_edge->setInformation(information_gap);
+      gap_edge->setParameters(*cfg_, gap, start_pos);
+      optimizer_->addEdge(gap_edge);
+      
+    }
+  }
 }
 
 void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoint_cost_scale, bool alternative_time_cost)

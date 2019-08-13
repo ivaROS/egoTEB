@@ -49,9 +49,9 @@ HomotopyClassPlanner::HomotopyClassPlanner() : cfg_(NULL), obstacles_(NULL), via
 }
 
 HomotopyClassPlanner::HomotopyClassPlanner(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model,
-                                           TebVisualizationPtr visual, const ViaPointContainer* via_points, const EgoCircleInterface* egocircle) : initial_plan_(NULL)
+                                           const EgoCircleInterface* egocircle, TebVisualizationPtr visual, const ViaPointContainer* via_points) : initial_plan_(NULL)
 {
-  initialize(cfg, obstacles, robot_model, visual, via_points, egocircle);
+  initialize(cfg, obstacles, robot_model, egocircle, visual, via_points);
 }
 
 HomotopyClassPlanner::~HomotopyClassPlanner()
@@ -59,18 +59,18 @@ HomotopyClassPlanner::~HomotopyClassPlanner()
 }
 
 void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacles, RobotFootprintModelPtr robot_model,
-                                      TebVisualizationPtr visual, const ViaPointContainer* via_points, const EgoCircleInterface* egocircle)
+                                      const EgoCircleInterface* egocircle, TebVisualizationPtr visual, const ViaPointContainer* via_points)
 {
   cfg_ = &cfg;
   obstacles_ = obstacles;
   via_points_ = via_points;
   robot_model_ = robot_model;
-
+  egocircle_ = egocircle;
+  
   if (cfg_->hcp.simple_exploration)
   {
     if(cfg_->hcp.use_gaps)
     {
-      egocircle_ = egocircle;
       graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle_));
     }
     else
@@ -406,7 +406,7 @@ void HomotopyClassPlanner::exploreEquivalenceClassesAndInitTebs(const PoseSE2& s
 
 TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const PoseSE2& start, const PoseSE2& goal, const geometry_msgs::Twist* start_velocity)
 {
-  TebOptimalPlannerPtr candidate =  TebOptimalPlannerPtr( new TebOptimalPlanner(*cfg_, obstacles_, robot_model_));
+  TebOptimalPlannerPtr candidate =  TebOptimalPlannerPtr( new TebOptimalPlanner(*cfg_, obstacles_, robot_model_, egocircle_));
 
   candidate->teb().initTrajectoryToGoal(start, goal, 0, cfg_->robot.max_vel_x, cfg_->trajectory.min_samples, cfg_->trajectory.allow_init_with_backwards_motion);
 
@@ -441,7 +441,7 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const PoseSE2& start
 
 TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const std::vector<geometry_msgs::PoseStamped>& initial_plan, const geometry_msgs::Twist* start_velocity)
 {
-  TebOptimalPlannerPtr candidate = TebOptimalPlannerPtr( new TebOptimalPlanner(*cfg_, obstacles_, robot_model_));
+  TebOptimalPlannerPtr candidate = TebOptimalPlannerPtr( new TebOptimalPlanner(*cfg_, obstacles_, robot_model_, egocircle_));
 
   candidate->teb().initTrajectoryToGoal(initial_plan, cfg_->robot.max_vel_x, true, cfg_->trajectory.min_samples, cfg_->trajectory.allow_init_with_backwards_motion);
 

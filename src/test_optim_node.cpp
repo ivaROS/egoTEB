@@ -61,6 +61,9 @@ ros::Subscriber clicked_points_sub;
 std::vector<ros::Subscriber> obst_vel_subs;
 unsigned int no_fixed_obstacles;
 
+std::shared_ptr<EgoCircleInterface> egocircle_;
+std::shared_ptr<egocircle_utils::InterfaceUpdater>egocircle_wrapper_;
+
 // =========== Function declarations =============
 void CB_mainCycle(const ros::TimerEvent& e);
 void CB_publishCycle(const ros::TimerEvent& e);
@@ -153,11 +156,15 @@ int main( int argc, char** argv )
   // Setup robot shape model
   RobotFootprintModelPtr robot_model = TebLocalPlannerROS::getRobotFootprintFromParamServer(n);
   
+  egocircle_ = std::make_shared<EgoCircleInterface>(n, n);
+  egocircle_wrapper_ = std::make_shared<egocircle_utils::InterfaceUpdater>(egocircle_, n, n);
+  egocircle_wrapper_->init();
+  
   // Setup planner (homotopy class planning or just the local teb planner)
   if (config.hcp.enable_homotopy_class_planning)
-    planner = PlannerInterfacePtr(new HomotopyClassPlanner(config, &obst_vector, robot_model, visual, &via_points));
+    planner = PlannerInterfacePtr(new HomotopyClassPlanner(config, &obst_vector, robot_model, egocircle_.get(), visual, &via_points));
   else
-    planner = PlannerInterfacePtr(new TebOptimalPlanner(config, &obst_vector, robot_model, visual, &via_points));
+    planner = PlannerInterfacePtr(new TebOptimalPlanner(config, &obst_vector, robot_model, egocircle_.get(), visual, &via_points));
   
 
   no_fixed_obstacles = obst_vector.size();
