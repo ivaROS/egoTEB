@@ -43,7 +43,7 @@ std::vector<geometry_msgs::PoseStamped> GraphSearchInterface::InterpolateGraph(c
     
     Eigen::Vector2d unit_diff = diff_last/diff_norm;
     
-    ROS_INFO_STREAM("Next: " << toString(next_pos) << "; curr: " << toString(cur_pos) << "; diff: " << toString(diff_last) << "; diff_norm: " << diff_norm << "; unit_diff: " << toString(unit_diff));
+    ROS_DEBUG_STREAM("Next: " << toString(next_pos) << "; curr: " << toString(cur_pos) << "; diff: " << toString(diff_last) << "; diff_norm: " << diff_norm << "; unit_diff: " << toString(unit_diff));
     
     double remaining_dist = diff_norm;
     
@@ -66,7 +66,7 @@ std::vector<geometry_msgs::PoseStamped> GraphSearchInterface::InterpolateGraph(c
       }
       else if(idx < 200)
       {
-        ROS_INFO_STREAM("idx: " << idx << "; sub_diff_norm: " << sub_diff_norm << "; curr_point: " << toString(cur_pos) << "; remaining_dist: " << remaining_dist);
+        ROS_DEBUG_STREAM("idx: " << idx << "; sub_diff_norm: " << sub_diff_norm << "; curr_point: " << toString(cur_pos) << "; remaining_dist: " << remaining_dist);
       }
     }
     

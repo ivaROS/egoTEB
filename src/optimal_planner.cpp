@@ -1099,6 +1099,12 @@ void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoi
       cost_ += edge_viapoint->getError().squaredNorm() * viapoint_cost_scale;
       continue;
     }
+    
+    EdgeGap* edge_gap = dynamic_cast<EdgeGap*>(*it);
+    if (edge_gap!=NULL)
+    {
+      cost_ += edge_gap->getError().squaredNorm();
+    }
   }
 
   // delete temporary created graph

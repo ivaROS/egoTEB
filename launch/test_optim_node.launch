@@ -1,7 +1,11 @@
 <launch>
 	
   	<!--- Run optimization test node -->
-   	<node pkg="teb_local_planner" type="test_optim_node" name="test_optim_node" output="screen" />
+   	<node pkg="teb_local_planner" type="test_optim_node" name="test_optim_node" output="screen">
+   	  <remap from="/scan" to = "nothing"/>
+   	</node>
+   	
+   	<node pkg="tf" type="static_transform_publisher" name="start_frame_pub" args="-4 0 0 0 0 0 odom fixed_start 100"/>
 
   	<!-- RVIZ -->
   	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find teb_local_planner)/cfg/rviz_test_optim.rviz" />

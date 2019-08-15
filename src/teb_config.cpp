@@ -99,6 +99,11 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("costmap_converter_plugin", obstacles.costmap_converter_plugin, obstacles.costmap_converter_plugin);
   nh.param("costmap_converter_spin_thread", obstacles.costmap_converter_spin_thread, obstacles.costmap_converter_spin_thread);
   
+  // Gaps
+  nh.param("gap_boundary_exponent", gaps.gap_boundary_exponent, gaps.gap_boundary_exponent);
+  nh.param("gap_boundary_threshold", gaps.gap_boundary_threshold, gaps.gap_boundary_threshold);
+  nh.param("gap_boundary_ratio", gaps.gap_boundary_ratio, gaps.gap_boundary_ratio);
+  
   // Optimization
   nh.param("no_inner_iterations", optim.no_inner_iterations, optim.no_inner_iterations);
   nh.param("no_outer_iterations", optim.no_outer_iterations, optim.no_outer_iterations);
@@ -120,6 +125,7 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("weight_dynamic_obstacle", optim.weight_dynamic_obstacle, optim.weight_dynamic_obstacle);    
   nh.param("weight_dynamic_obstacle_inflation", optim.weight_dynamic_obstacle_inflation, optim.weight_dynamic_obstacle_inflation);
   nh.param("weight_viapoint", optim.weight_viapoint, optim.weight_viapoint);
+  nh.param("weight_gap", optim.weight_gap, optim.weight_gap);
   nh.param("weight_prefer_rotdir", optim.weight_prefer_rotdir, optim.weight_prefer_rotdir);
   nh.param("weight_adapt_factor", optim.weight_adapt_factor, optim.weight_adapt_factor);
   
@@ -209,6 +215,10 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   obstacles.costmap_obstacles_behind_robot_dist = cfg.costmap_obstacles_behind_robot_dist;
   obstacles.obstacle_poses_affected = cfg.obstacle_poses_affected;
 
+  // Gaps
+  gaps.gap_boundary_ratio = cfg.gap_boundary_ratio;
+  gaps.gap_boundary_threshold = cfg.gap_boundary_threshold;
+  gaps.gap_boundary_exponent = cfg.gap_boundary_exponent;
   
   // Optimization
   optim.no_inner_iterations = cfg.no_inner_iterations;
@@ -231,6 +241,7 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   optim.weight_dynamic_obstacle = cfg.weight_dynamic_obstacle;
   optim.weight_dynamic_obstacle_inflation = cfg.weight_dynamic_obstacle_inflation;
   optim.weight_viapoint = cfg.weight_viapoint;
+  optim.weight_gap = cfg.weight_gap;
   optim.weight_adapt_factor = cfg.weight_adapt_factor;
   
   // Homotopy Class Planner
@@ -242,6 +253,7 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   hcp.selection_viapoint_cost_scale = cfg.selection_viapoint_cost_scale;
   hcp.selection_alternative_time_cost = cfg.selection_alternative_time_cost;
   hcp.switching_blocking_period = cfg.switching_blocking_period;
+  hcp.use_gaps = cfg.use_gaps;
   
   hcp.obstacle_heading_threshold = cfg.obstacle_heading_threshold;
   hcp.roadmap_graph_no_samples = cfg.roadmap_graph_no_samples;
@@ -253,10 +265,7 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   hcp.viapoints_all_candidates = cfg.viapoints_all_candidates;
   hcp.visualize_hc_graph = cfg.visualize_hc_graph;
   hcp.visualize_with_time_as_z_axis_scale = cfg.visualize_with_time_as_z_axis_scale;
-  
-  gaps.gap_boundary_ratio = cfg.gap_boundary_ratio;
-  gaps.gap_boundary_threshold = cfg.gap_boundary_threshold;
-  gaps.gap_boundary_exponent = cfg.gap_boundary_exponent;
+
   // Recovery
   
   recovery.shrink_horizon_backup = cfg.shrink_horizon_backup;

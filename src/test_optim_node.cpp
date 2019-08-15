@@ -60,6 +60,8 @@ ros::Subscriber via_points_sub;
 ros::Subscriber clicked_points_sub;
 std::vector<ros::Subscriber> obst_vel_subs;
 unsigned int no_fixed_obstacles;
+std::shared_ptr<ego_circle::EgoCircleROS> circle_wrapper;
+ego_circle::EgoCircle* circle_;
 
 std::shared_ptr<EgoCircleInterface> egocircle_;
 std::shared_ptr<egocircle_utils::InterfaceUpdater>egocircle_wrapper_;
@@ -157,8 +159,11 @@ int main( int argc, char** argv )
   RobotFootprintModelPtr robot_model = TebLocalPlannerROS::getRobotFootprintFromParamServer(n);
   
   egocircle_ = std::make_shared<EgoCircleInterface>(n, n);
-  egocircle_wrapper_ = std::make_shared<egocircle_utils::InterfaceUpdater>(egocircle_, n, n);
-  egocircle_wrapper_->init();
+  
+  geometry_msgs::TransformStamped transform;
+  transform.transform.translation.x=4;
+  transform.transform.rotation.w=1;
+  egocircle_->setTransform(transform);
   
   // Setup planner (homotopy class planning or just the local teb planner)
   if (config.hcp.enable_homotopy_class_planning)
@@ -256,6 +261,34 @@ void CB_obstacle_marker(const visualization_msgs::InteractiveMarkerFeedbackConst
     return;
   PointObstacle* pobst = static_cast<PointObstacle*>(obst_vector.at(index).get());
   pobst->position() = Eigen::Vector2d(feedback->pose.position.x,feedback->pose.position.y);	  
+  
+  
+  std::vector<ego_circle::EgoCircularPoint> points;
+  for(int i = 0; i < no_fixed_obstacles; i++)
+  {
+    PointObstacle* pobst = static_cast<PointObstacle*>(obst_vector.at(i).get());
+    Eigen::Vector2d pos = pobst->position();
+    ego_circle::EgoCircularPoint p(pos.x()+4, pos.y());
+    points.push_back(p);
+  }
+  
+  ego_circle::EgoCircle circle(512);
+  circle.insertPoints(points, false);
+  
+  std::vector<float> depths = circle.getDepths();
+  
+  sensor_msgs::LaserScan scan;
+  scan.header.frame_id = "fixed_start";
+  scan.header.stamp = feedback->header.stamp;
+  scan.angle_min= -std::acos(-1);
+  scan.angle_max= std::acos(-1);
+  scan.angle_increment = 1/circle.indexer_.scale;
+  scan.ranges = depths;
+  scan.range_min = 0;
+  scan.range_max = circle.max_depth_ + ego_circle::EgoCircleROS::OFFSET;  //TODO: make this .01 and see if still visible. Or even get rid of the increase so that only actual points are shown; maybe make it a parameter
+  
+  sensor_msgs::LaserScan::ConstPtr scan_ptr(new sensor_msgs::LaserScan(scan));
+  egocircle_->update(scan_ptr);
 }
 
 void CB_customObstacle(const costmap_converter::ObstacleArrayMsg::ConstPtr& obst_msg)

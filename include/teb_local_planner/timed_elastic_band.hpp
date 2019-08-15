@@ -309,7 +309,7 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         }
         else
         {
-          ROS_INFO_STREAM("idx: " << idx << "; sub_diff_norm: " << sub_diff_norm << "; curr_point: " << toString(curr_point) << "; remaining_dist: " << remaining_dist << "; timestep: " << timestep);
+          ROS_DEBUG_STREAM("idx: " << idx << "; sub_diff_norm: " << sub_diff_norm << "; curr_point: " << toString(curr_point) << "; remaining_dist: " << remaining_dist << "; timestep: " << timestep);
         }
       }
     }

@@ -322,8 +322,8 @@ public:
    
     hcp.enable_homotopy_class_planning = true;
     hcp.enable_multithreading = true;
-    hcp.simple_exploration = false;
-    hcp.use_gaps = false;
+    hcp.simple_exploration = true;
+    hcp.use_gaps = true;
     hcp.max_number_classes = 5; 
     hcp.selection_cost_hysteresis = 1.0;
     hcp.selection_prefer_initial_plan = 0.95;
