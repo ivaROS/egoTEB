@@ -70,6 +70,7 @@ std::shared_ptr<egocircle_utils::InterfaceUpdater>egocircle_wrapper_;
 void CB_mainCycle(const ros::TimerEvent& e);
 void CB_publishCycle(const ros::TimerEvent& e);
 void CB_reconfigure(TebLocalPlannerReconfigureConfig& reconfig, uint32_t level);
+void updateEgocircle(ros::Time time);
 void CB_customObstacle(const costmap_converter::ObstacleArrayMsg::ConstPtr& obst_msg);
 void CreateInteractiveMarker(const double& init_x, const double& init_y, unsigned int id, std::string frame, interactive_markers::InteractiveMarkerServer* marker_server, interactive_markers::InteractiveMarkerServer::FeedbackCallback feedback_cb);
 void CB_obstacle_marker(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
@@ -181,6 +182,7 @@ int main( int argc, char** argv )
 // Planning loop
 void CB_mainCycle(const ros::TimerEvent& e)
 {
+  updateEgocircle(e.current_real);
   planner->plan(PoseSE2(-4,0,0), PoseSE2(4,0,0)); // hardcoded start and goal for testing purposes
 }
 
@@ -195,6 +197,36 @@ void CB_publishCycle(const ros::TimerEvent& e)
 void CB_reconfigure(TebLocalPlannerReconfigureConfig& reconfig, uint32_t level)
 {
   config.reconfigure(reconfig);
+}
+
+void updateEgocircle(ros::Time time)
+{
+  std::vector<ego_circle::EgoCircularPoint> points;
+  for(int i = 0; i < no_fixed_obstacles; i++)
+  {
+    PointObstacle* pobst = static_cast<PointObstacle*>(obst_vector.at(i).get());
+    Eigen::Vector2d pos = pobst->position();
+    ego_circle::EgoCircularPoint p(pos.x()+4, pos.y());
+    points.push_back(p);
+  }
+  
+  ego_circle::EgoCircle circle(512);
+  circle.insertPoints(points, false);
+  
+  std::vector<float> depths = circle.getDepths();
+  
+  sensor_msgs::LaserScan scan;
+  scan.header.frame_id = "fixed_start";
+  scan.header.stamp = time;
+  scan.angle_min= -std::acos(-1);
+  scan.angle_max= std::acos(-1);
+  scan.angle_increment = 1/circle.indexer_.scale;
+  scan.ranges = depths;
+  scan.range_min = 0;
+  scan.range_max = circle.max_depth_ + ego_circle::EgoCircleROS::OFFSET;  //TODO: make this .01 and see if still visible. Or even get rid of the increase so that only actual points are shown; maybe make it a parameter
+  
+  sensor_msgs::LaserScan::ConstPtr scan_ptr(new sensor_msgs::LaserScan(scan));
+  egocircle_->update(scan_ptr); 
 }
 
 void CreateInteractiveMarker(const double& init_x, const double& init_y, unsigned int id, std::string frame, interactive_markers::InteractiveMarkerServer* marker_server, interactive_markers::InteractiveMarkerServer::FeedbackCallback feedback_cb)
@@ -261,34 +293,6 @@ void CB_obstacle_marker(const visualization_msgs::InteractiveMarkerFeedbackConst
     return;
   PointObstacle* pobst = static_cast<PointObstacle*>(obst_vector.at(index).get());
   pobst->position() = Eigen::Vector2d(feedback->pose.position.x,feedback->pose.position.y);	  
-  
-  
-  std::vector<ego_circle::EgoCircularPoint> points;
-  for(int i = 0; i < no_fixed_obstacles; i++)
-  {
-    PointObstacle* pobst = static_cast<PointObstacle*>(obst_vector.at(i).get());
-    Eigen::Vector2d pos = pobst->position();
-    ego_circle::EgoCircularPoint p(pos.x()+4, pos.y());
-    points.push_back(p);
-  }
-  
-  ego_circle::EgoCircle circle(512);
-  circle.insertPoints(points, false);
-  
-  std::vector<float> depths = circle.getDepths();
-  
-  sensor_msgs::LaserScan scan;
-  scan.header.frame_id = "fixed_start";
-  scan.header.stamp = feedback->header.stamp;
-  scan.angle_min= -std::acos(-1);
-  scan.angle_max= std::acos(-1);
-  scan.angle_increment = 1/circle.indexer_.scale;
-  scan.ranges = depths;
-  scan.range_min = 0;
-  scan.range_max = circle.max_depth_ + ego_circle::EgoCircleROS::OFFSET;  //TODO: make this .01 and see if still visible. Or even get rid of the increase so that only actual points are shown; maybe make it a parameter
-  
-  sensor_msgs::LaserScan::ConstPtr scan_ptr(new sensor_msgs::LaserScan(scan));
-  egocircle_->update(scan_ptr);
 }
 
 void CB_customObstacle(const costmap_converter::ObstacleArrayMsg::ConstPtr& obst_msg)

@@ -9,8 +9,7 @@ Panels:
         - /Marker1/Namespaces1
         - /InteractiveMarkers1
         - /LaserScan1
-        - /LaserScan1/Status1
-        - /Axes1
+        - /Start1
       Splitter Ratio: 0.49444443
     Tree Height: 1132
   - Class: rviz/Selection
@@ -117,8 +116,6 @@ Visualization Manager:
       Marker Topic: /test_optim_node/teb_markers
       Name: Marker
       Namespaces:
-        GraphEdges: true
-        GraphVertices: true
         PointObstacles: true
         TebContainer: true
         detours: false
@@ -173,9 +170,17 @@ Visualization Manager:
     - Class: rviz/Axes
       Enabled: true
       Length: 0.200000003
-      Name: Axes
+      Name: Start
       Radius: 0.0199999996
       Reference Frame: fixed_start
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /gap_edges
+      Name: Gap Edges
+      Namespaces:
+        gap_edges: true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:

@@ -692,6 +692,8 @@ protected:
   const ViaPointContainer* via_points_; //!< Store via points for planning
   const EgoCircleInterface* egocircle_;
   
+  ros::Publisher gap_pub_;
+  
   double cost_; //!< Store cost value of the current hyper-graph
   RotType prefer_rotdir_; //!< Store whether to prefer a specific initial rotation in optimization (might be activated in case the robot oscillates)
   

@@ -40,6 +40,7 @@
 #include <map>
 #include <limits>
 
+#include <visualization_msgs/MarkerArray.h>
 
 namespace teb_local_planner
 {
@@ -90,6 +91,9 @@ void TebOptimalPlanner::initialize(const TebConfig& cfg, ObstContainer* obstacle
   vel_goal_.second.linear.y = 0;
   vel_goal_.second.angular.z = 0;
   initialized_ = true;
+  
+  ros::NodeHandle nh;
+  gap_pub_ = nh.advertise<visualization_msgs::MarkerArray>("gap_edges", 5);
 }
 
 
@@ -981,27 +985,57 @@ void TebOptimalPlanner::AddEdgesPreferRotDir()
 }
 
 
-void TebOptimalPlanner::AddEdgesGaps()
-{
-  Eigen::Vector2d start_pos = teb_.PoseVertex(0)->pose().position();
-  
-  // create edge for staying within gaps
-  Eigen::Matrix<double,1,1> information_gap;
-  information_gap.fill(cfg_->optim.weight_gap);
-  
-  for(GlobalGap gap : egocircle_->getGlobalGaps())
-  {
-    for (int i=0; i < teb_.sizePoses()-1; i++) // ignore twiced start only
-    {
-      EdgeGap* gap_edge = new EdgeGap;
-      gap_edge->setVertex(0,teb_.PoseVertex(i));
-      gap_edge->setInformation(information_gap);
-      gap_edge->setParameters(*cfg_, gap, start_pos);
-      optimizer_->addEdge(gap_edge);
-      
-    }
-  }
-}
+// void TebOptimalPlanner::AddEdgesGaps()
+// {
+//   Eigen::Vector2d start_pos = teb_.PoseVertex(0)->pose().position();
+//   
+//   // create edge for staying within gaps
+//   Eigen::Matrix<double,1,1> information_gap;
+//   information_gap.fill(cfg_->optim.weight_gap);
+//   
+//   for(GlobalGap gap : egocircle_->getGlobalGaps())
+//   {
+//     Eigen::Vector2d gap_l(gap[0].x, gap[0].y);
+//     Eigen::Vector2d gap_r(gap[1].x, gap[1].y);
+//     
+//     //Eigen::Vector2d gap_vec((gap[1].x - gap[0].x), (gap[1].y - gap[0].y));
+//     Eigen::Vector2d gap_vec = gap_r - gap_l;
+//     double gap_norm = gap_vec.norm();
+//     Eigen::Vector2d normed_vec = gap_vec/gap_norm;
+//     
+//     int closest_pose = -1;
+//     double closest_distance = 0;
+//     for (int i=0; i < teb_.sizePoses()-1; i++)
+//     {
+//       Eigen::Vector2d pos = teb_.PoseVertex(i)->pose().position();
+//       
+//       Eigen::Vector2d pos_v = pos - gap_l;
+//       
+//       double vdot = pos_v.dot(normed_vec);
+//       if(vdot > 0 && vdot < gap_norm)
+//       {
+//         double gap_dist = (gap_vec.y()*pos.x() - gap_vec.x()*pos.y()+ gap_r.x()*gap_l.y() - gap_r.y()*gap_l.x())/gap_norm;
+//         if(closest_pose < 0 || gap_dist < closest_distance)
+//         {
+//           closest_distance = gap_dist;
+//           closest_pose = i;
+//         }
+//       }
+//     }
+//     
+//     if(closest_pose >=0)
+//     //int i = teb_.sizePoses()/2;
+//     {
+//       EdgeGap* gap_edge = new EdgeGap;
+//       gap_edge->setVertex(0,teb_.PoseVertex(closest_pose));
+//       gap_edge->setInformation(information_gap);
+//       gap_edge->setParameters(*cfg_, gap, start_pos);
+//       optimizer_->addEdge(gap_edge);
+//       
+//       
+//     }
+//   }
+// }
 
 void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoint_cost_scale, bool alternative_time_cost)
 { 
@@ -1103,7 +1137,14 @@ void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoi
     EdgeGap* edge_gap = dynamic_cast<EdgeGap*>(*it);
     if (edge_gap!=NULL)
     {
-      cost_ += edge_gap->getError().squaredNorm();
+      double gap_cost = edge_gap->getError().squaredNorm();
+      cost_ += gap_cost;
+      ROS_INFO_STREAM_NAMED("gap_edges", "Gap cost: " << gap_cost);
+      /*
+      GlobalGap gap = edge_gap->measurement();
+      
+      */
+      continue;
     }
   }
 

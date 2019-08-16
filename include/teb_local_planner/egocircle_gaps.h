@@ -68,6 +68,7 @@ namespace egocircle_utils
         float prev_r = prev_p.r;
         
         bool add_gap = false;
+        bool extend_gap = false;
         
         if(curr_r == max_r)
         {
@@ -80,7 +81,7 @@ namespace egocircle_utils
         {
           if(curr_r < max_r)
           {
-            add_gap = true;
+            extend_gap = true;
           }
         }
         else if (std::abs(prev_r - curr_r) >= 2* inscribed_radius)
@@ -88,14 +89,34 @@ namespace egocircle_utils
           add_gap = true;
         }
         
-        if(add_gap)
+        if(add_gap || (extend_gap && gaps.size()==0))
         {
           Gap gap(curr_p,prev_p);
           gaps.push_back(gap);
           PolarPoint mid = gap.getMid();
           ROS_DEBUG_STREAM("Start: " << prev_p.r << "m, @ " << prev_p.theta << ", Stop: " << curr_p.r << "m, @ " << curr_p.theta << "Mid: " << mid.r << "m, @ " << mid.theta);
         }
+        else if(extend_gap)
+        {
+          gaps[gaps.size()-1].end = curr_p;
+        }
       }
+      
+      if(gaps.size()>=2)
+      {
+        Gap last_gap = gaps[gaps.size()-1];
+        if(last_gap.end.r == max_r) // if last gap ends with infinity, the first gap must have started where this one starts
+        {
+          gaps[0].start = last_gap.start;
+          gaps.pop_back();
+        }
+      }
+      
+      
+//       std::vector<Gap> collapsed_gaps;
+//       for(int start_ind = 0, num_gaps=gaps.size(); start_ind < num_gaps; start_ind++)
+//       {
+//         int prev_ind = (start_ind + num_points-1) % num_gaps;
       
       return gaps;
     }

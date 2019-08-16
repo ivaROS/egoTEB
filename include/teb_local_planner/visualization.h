@@ -219,6 +219,8 @@ public:
    */
   void publishFeedbackMessage(const TebOptimalPlanner& teb_planner, const ObstContainer& obstacles);
   
+  void addGapEdge(const Eigen::Vector2d& gap_l, const Eigen::Vector2d& gap_r, const Eigen::Vector2d& pose);
+  
   //@}
   
 protected:

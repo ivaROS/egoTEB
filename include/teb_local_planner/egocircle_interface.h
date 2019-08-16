@@ -10,6 +10,7 @@
 #include <egocircle_utils/decimator.h>
 
 #include <teb_local_planner/egocircle_gaps.h> //TODO: Move this to egocircle_utils once it has stabilized
+#include <std_msgs/Header.h>
 
 namespace teb_local_planner
 {
@@ -45,6 +46,8 @@ namespace teb_local_planner
     const std::vector<GlobalGap>& getGlobalGaps() const;
     
     const std::vector<ego_circle::EgoCircularPoint>& getDecimatedEgoCircularPoints() const;
+    
+    std_msgs::Header getCurrentHeader() const;
     
     static constexpr const char* DEFAULT_NAME="ego_circle_cost_impl";
     

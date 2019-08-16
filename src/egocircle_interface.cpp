@@ -15,7 +15,7 @@ namespace teb_local_planner
     {
       inflated_egocircle_pub_ = pnh_.advertise<sensor_msgs::LaserScan>("inflated_egocircle", 5, true);
       decimated_egocircle_pub_ = pnh_.advertise<visualization_msgs::Marker>("decimated_egocircle", 5, true);
-      
+//       gap_pub_ = pnh_
     }
     
     void EgoCircleInterface::setSearchRadius(double radius)
@@ -143,6 +143,20 @@ namespace teb_local_planner
     {
       return decimator_->getPoints();
     }
+    
+    std_msgs::Header EgoCircleInterface::getCurrentHeader() const
+    {
+      if(container_)
+      {
+        return container_->scan->header;
+      }
+      else
+      {
+        std_msgs::Header empty;
+        return empty;
+      }
+    }
+    
 
 }
 
