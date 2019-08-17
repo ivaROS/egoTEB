@@ -62,6 +62,27 @@ void addMarker(visualization_msgs::MarkerArray& markers, std_msgs::Header header
   
   markers.markers.push_back(gap_marker);
 }
+
+double intersects(GlobalGap gap, const VertexPose* pose1, const VertexPose* pose2)
+{
+  Eigen::Vector2d p3(gap[0].x, gap[0].y);
+  Eigen::Vector2d p4(gap[1].x, gap[1].y);
+  
+  Eigen::Vector2d p1 = pose1->pose().position();
+  Eigen::Vector2d p2 = pose2->pose().position();
+  
+  Eigen::Matrix2d m;
+  m.col(0) = p4-p3;
+  m.col(1) = -(p2-p1);
+  
+  Eigen::Vector2d res = m.inverse() * (p1-p3);
+  
+  if(res.x()>0 && res.x() < 1 && res.y() >0 && res.y() < 1)
+  {
+    return 1;
+  }
+  return -1;
+}
   
 void TebOptimalPlanner::AddEdgesGaps()
 {
@@ -90,8 +111,15 @@ void TebOptimalPlanner::AddEdgesGaps()
     
     int closest_pose = -1;
     double closest_distance = 0;
-    for (int i=0; i < teb_.sizePoses()-1; i++)
+    for (int i=0; i < teb_.sizePoses()-2; i++)
     {
+      double res = intersects(gap, teb_.PoseVertex(i), teb_.PoseVertex(i+1));
+      if(res >=0)
+      {
+        closest_distance = res;
+        closest_pose = i;
+      }
+      /*
       Eigen::Vector2d pos = teb_.PoseVertex(i)->pose().position();
       
       Eigen::Vector2d pos_v = pos - gap_l;
@@ -106,6 +134,7 @@ void TebOptimalPlanner::AddEdgesGaps()
           closest_pose = i;
         }
       }
+      */
     }
     
     if(closest_pose >=0)
