@@ -15,7 +15,7 @@ namespace teb_local_planner
     {
       inflated_egocircle_pub_ = pnh_.advertise<sensor_msgs::LaserScan>("inflated_egocircle", 5, true);
       decimated_egocircle_pub_ = pnh_.advertise<visualization_msgs::Marker>("decimated_egocircle", 5, true);
-//       gap_pub_ = pnh_
+      gap_pub_ = pnh_.advertise<visualization_msgs::MarkerArray>("gaps", 5, true);
     }
     
     void EgoCircleInterface::setSearchRadius(double radius)
@@ -34,10 +34,18 @@ namespace teb_local_planner
       inflator_ = std::make_shared<egocircle_utils::Inflator>(*container_, inflation_radius_);
       min_dist_ = std::make_shared<egocircle_utils::MinDistanceCalculator>(*container_, search_radius_);
       decimator_ = std::make_shared<egocircle_utils::Decimator>(*container_, inflation_radius_);
-      gaps_ = egocircle_utils::gap_finding::getDiscontinuityGaps(*inflator_);
+      
+      auto raw_gaps = egocircle_utils::gap_finding::getDiscontinuityGaps(*inflator_);
+      
+      gaps_ = egocircle_utils::gap_finding::getCollapsedGaps(raw_gaps, container_->egocircle_radius);
+      
+      visualization_msgs::MarkerArray markers = egocircle_utils::gap_finding::getMarkers(raw_gaps, gaps_, scan_msg->header);
+      
+      gap_pub_.publish(markers);
       
       global_gaps_.clear();
       int num_gaps = gaps_.size();
+      ROS_INFO_STREAM("[EgoCircleInterface::update] There are " << num_gaps << " gaps");
       
       for(int i = 0; i < num_gaps; ++i)
       {

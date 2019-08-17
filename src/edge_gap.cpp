@@ -26,7 +26,7 @@ namespace teb_local_planner
     double costr = computeBoundaryError(pnt, right_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
     
     _error[0] = std::max(costl, costr);
-    ROS_INFO_STREAM("Gap: [" << _measurement[0].x << "," << _measurement[0].y <<"] - [" << _measurement[1].x << "," << _measurement[1].y << "]. Pose: (" << pose->pose().position().x() << "," << pose->pose().position().y() << ") Costl: " << costl << ", Costr: " << costr);
+    //ROS_INFO_STREAM("Gap: [" << _measurement[0].x << "," << _measurement[0].y <<"] - [" << _measurement[1].x << "," << _measurement[1].y << "]. Pose: (" << pose->pose().position().x() << "," << pose->pose().position().y() << ") Costl: " << costl << ", Costr: " << costr);
 
     ROS_ASSERT_MSG(std::isfinite(_error[0]), "EdgeObstacle::computeError() _error[0]=%f\n",_error[0]);
   }

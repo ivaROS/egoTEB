@@ -76,6 +76,8 @@ void TebOptimalPlanner::AddEdgesGaps()
   Eigen::Matrix<double,1,1> information_gap;
   information_gap.fill(cfg_->optim.weight_gap);
   
+  //Update with line intersection logic such as from here: http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
+  //Point to line: https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
   for(GlobalGap gap : egocircle_->getGlobalGaps())
   {
     Eigen::Vector2d gap_l(gap[0].x, gap[0].y);

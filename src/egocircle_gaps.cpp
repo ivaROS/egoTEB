@@ -1,40 +1,11 @@
-#ifndef EGOCIRCLE_GAPS_H
-#define EGOCIRCLE_GAPS_H
+#include <teb_local_planner/egocircle_gaps.h>
 
 
-#include <egocircle_utils/inflator.h>
-#include <visualization_msgs/MarkerArray.h>
 
 namespace egocircle_utils
 {
   namespace gap_finding
   {
-    using ego_circle::EgoCircularPoint;
-    using ego_circle::PolarPoint;
-    
-    struct Gap 
-    {
-      Gap(PolarPoint start, PolarPoint end):
-        start(start),
-        end(end)
-      {}
-      
-      PolarPoint getMid()
-      {
-        return PolarPoint((start.r+end.r)/2, (start.theta+end.theta)/2);
-      }
-      
-      PolarPoint start, end;
-    };
-    
-    std::vector<Gap> getDiscontinuityGaps(const egocircle_utils::Inflator& inflator);
-    
-    std::vector<Gap> getCollapsedGaps(const std::vector<Gap>& gaps, double max_r);
-    
-    visualization_msgs::MarkerArray getMarkers(const std::vector<Gap>& raw_gaps, const std::vector<Gap>& collapsed_gaps, std_msgs::Header header);
-    
-    
-    /*
     static std::string toString(const Gap& gap)
     {
       std::stringstream ss;
@@ -48,14 +19,65 @@ namespace egocircle_utils
     }
     
     
-    inline std::vector<Gap> getDiscontinuityGaps(const egocircle_utils::Inflator& inflator)
+    void addGapsToMarker(visualization_msgs::Marker& marker, const std_msgs::ColorRGBA& color, const std::vector<Gap>& gaps)
+    {
+      for( Gap gap : gaps)
+      {
+        geometry_msgs::Point gap_r;
+        gap_r.x = gap.start.r*std::cos(gap.start.theta);
+        gap_r.y = gap.start.r*std::sin(gap.start.theta);
+        
+        geometry_msgs::Point gap_l;
+        gap_l.x = gap.end.r*std::cos(gap.end.theta);
+        gap_l.y = gap.end.r*std::sin(gap.end.theta);
+        
+        marker.points.push_back(gap_r);
+        marker.points.push_back(gap_l);
+        
+        marker.colors.push_back(color);
+        marker.colors.push_back(color);
+      }
+    }
+    
+    
+    visualization_msgs::MarkerArray getMarkers(const std::vector<Gap>& raw_gaps, const std::vector<Gap>& collapsed_gaps, std_msgs::Header header)
+    {
+      visualization_msgs::Marker gap_marker;
+      gap_marker.type = visualization_msgs::Marker::LINE_LIST;
+      gap_marker.header = header;
+      gap_marker.ns = "raw_gaps";
+      gap_marker.id = 0;
+      gap_marker.action = visualization_msgs::Marker::ADD;
+      gap_marker.scale.x = .03;
+      
+      std_msgs::ColorRGBA raw_gap_color;
+      raw_gap_color.a = .5;
+      raw_gap_color.b = 1;
+      
+      
+      
+      addGapsToMarker(gap_marker, raw_gap_color, raw_gaps);
+      
+      std_msgs::ColorRGBA collapsed_gap_color;
+      collapsed_gap_color.a = .5;
+      collapsed_gap_color.g = 1;
+      
+      addGapsToMarker(gap_marker, collapsed_gap_color, collapsed_gaps);
+      
+      visualization_msgs::MarkerArray markers;
+      markers.markers.push_back(gap_marker);
+      
+      return markers;
+    }
+
+    std::vector<Gap> getDiscontinuityGaps(const egocircle_utils::Inflator& inflator)
     {
       const Container& container = inflator.getContainer();
-      
+
       const sensor_msgs::LaserScan& scan = *container.scan;
       float angle_increment = scan.angle_increment;
       float current_angle = scan.angle_min;
-      
+
       int num_points = scan.ranges.size();
       
       float inscribed_radius=inflator.getInflationRadius();
@@ -112,29 +134,28 @@ namespace egocircle_utils
         
         if(add_gap)
         {
-          Gap gap(curr_p,prev_p);
+          Gap gap(prev_p, curr_p);
           gaps.push_back(gap);
           PolarPoint mid = gap.getMid();
           ROS_INFO_STREAM("Adding gap: " << toString(gap));
         }
-        
+       
       }
+      
+      return gaps;
+    }
+    
+    std::vector<Gap> getCollapsedGaps(const std::vector<Gap>& gaps, double max_r)
+    {
       
       ROS_INFO_STREAM("Collapsing gaps:");
       std::vector<Gap> collapsed_gaps;
       if(gaps.size()>=2)
       {
-        Gap last_gap = gaps[gaps.size()-1];
-        if(last_gap.end.r == max_r) // if last gap ends with infinity, the first gap must have started where this one starts
-        {
-          gaps[0].start = last_gap.start;
-          gaps.pop_back();
-        }
-        
         
         for(int start_ind = 0, num_gaps=gaps.size(); start_ind < num_gaps; start_ind++)
         {
-          int prev_ind = (start_ind + num_points-1) % num_gaps;
+          int prev_ind = (start_ind + num_gaps-1) % num_gaps;
           
           Gap cur_gap = gaps[start_ind];
           Gap prev_gap = gaps[prev_ind];
@@ -160,9 +181,7 @@ namespace egocircle_utils
       
       return collapsed_gaps;
     }
-    */
-
-  } //end namespace gap_finding
-} //end namespace egocircle_utils
-
-#endif //EGOCIRCLE_GAPS_H
+    
+  }
+  
+}

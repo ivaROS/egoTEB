@@ -64,7 +64,7 @@ namespace teb_local_planner
     
     std::string name_;    
     
-    ros::Publisher inflated_egocircle_pub_, decimated_egocircle_pub_;
+    ros::Publisher inflated_egocircle_pub_, decimated_egocircle_pub_, gap_pub_;
     
     ros::NodeHandle nh_, pnh_;	// For now, separate node handles for base and derived
     
