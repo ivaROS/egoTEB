@@ -6,7 +6,7 @@ namespace egocircle_utils
 {
   namespace gap_finding
   {
-    static std::string toString(const Gap& gap)
+    std::string toString(const Gap& gap)
     {
       std::stringstream ss;
       ss << "(" <<
@@ -42,30 +42,34 @@ namespace egocircle_utils
     
     visualization_msgs::MarkerArray getMarkers(const std::vector<Gap>& raw_gaps, const std::vector<Gap>& collapsed_gaps, std_msgs::Header header)
     {
-      visualization_msgs::Marker gap_marker;
-      gap_marker.type = visualization_msgs::Marker::LINE_LIST;
-      gap_marker.header = header;
-      gap_marker.ns = "raw_gaps";
-      gap_marker.id = 0;
-      gap_marker.action = visualization_msgs::Marker::ADD;
-      gap_marker.scale.x = .03;
+      visualization_msgs::Marker raw_gap_marker;
+      raw_gap_marker.type = visualization_msgs::Marker::LINE_LIST;
+      raw_gap_marker.header = header;
+      raw_gap_marker.ns = "raw_gaps";
+      raw_gap_marker.id = 0;
+      raw_gap_marker.action = visualization_msgs::Marker::ADD;
+      raw_gap_marker.scale.x = .03;
+      
+      visualization_msgs::Marker collapsed_gap_marker = raw_gap_marker;
       
       std_msgs::ColorRGBA raw_gap_color;
       raw_gap_color.a = .5;
       raw_gap_color.b = 1;
       
+      addGapsToMarker(raw_gap_marker, raw_gap_color, raw_gaps);
       
       
-      addGapsToMarker(gap_marker, raw_gap_color, raw_gaps);
+      collapsed_gap_marker.ns = "collapsed_gaps";
       
       std_msgs::ColorRGBA collapsed_gap_color;
       collapsed_gap_color.a = .5;
       collapsed_gap_color.g = 1;
       
-      addGapsToMarker(gap_marker, collapsed_gap_color, collapsed_gaps);
+      addGapsToMarker(collapsed_gap_marker, collapsed_gap_color, collapsed_gaps);
       
       visualization_msgs::MarkerArray markers;
-      markers.markers.push_back(gap_marker);
+      markers.markers.push_back(raw_gap_marker);
+      markers.markers.push_back(collapsed_gap_marker);
       
       return markers;
     }

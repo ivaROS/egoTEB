@@ -115,6 +115,8 @@ Visualization Manager:
       Marker Topic: /test_optim_node/teb_markers
       Name: Marker
       Namespaces:
+        GraphEdges: true
+        GraphVertices: true
         PointObstacles: true
         TebContainer: true
         detours: false
@@ -178,7 +180,9 @@ Visualization Manager:
       Marker Topic: /gap_edges
       Name: Gap Edges
       Namespaces:
-        gap_edges: true
+        gap_borders: true
+        gap_normals: true
+        gap_poses: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -186,7 +190,8 @@ Visualization Manager:
       Marker Topic: /test_optim_node/ego_circle_cost_impl/gaps
       Name: Gaps
       Namespaces:
-        raw_gaps: true
+        collapsed_gaps: true
+        raw_gaps: false
       Queue Size: 100
       Value: true
   Enabled: true

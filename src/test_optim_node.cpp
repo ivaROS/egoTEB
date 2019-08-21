@@ -110,11 +110,11 @@ int main( int argc, char** argv )
   interactive_markers::InteractiveMarkerServer marker_server("marker_obstacles");
 
   obst_vector.push_back( boost::make_shared<PointObstacle>(-3,1) );
-  obst_vector.push_back( boost::make_shared<PointObstacle>(2.5,2) );
-  obst_vector.push_back( boost::make_shared<PointObstacle>(0,0.1) );
+  obst_vector.push_back( boost::make_shared<PointObstacle>(2.5,3) );
+  obst_vector.push_back( boost::make_shared<PointObstacle>(2,-3) );
   obst_vector.push_back( boost::make_shared<PointObstacle>(-3,-1) );
-  obst_vector.push_back( boost::make_shared<PointObstacle>(-1.5,1.1) );
-  obst_vector.push_back( boost::make_shared<PointObstacle>(0,-2) );
+  obst_vector.push_back( boost::make_shared<PointObstacle>(-1.5,3.1) );
+  obst_vector.push_back( boost::make_shared<PointObstacle>(0,-3) );
   
 //  obst_vector.push_back( boost::make_shared<LineObstacle>(1,1.5,1,-1.5) ); //90 deg
 //  obst_vector.push_back( boost::make_shared<LineObstacle>(1,0,-1,0) ); //180 deg

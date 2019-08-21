@@ -71,7 +71,7 @@ void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obsta
   {
     if(cfg_->hcp.use_gaps)
     {
-      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle_));
+      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle_, equivalence_classes_));
     }
     else
     {
@@ -254,19 +254,19 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
   TebOptPlannerContainer::iterator it_teb = tebs_.begin();
   while(it_teb != tebs_.end())
   {
-    if(cfg_->hcp.use_gaps)
-    {
-      if(*it_teb != best_teb_)
-      {
-        it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
-        ROS_DEBUG_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it is not the previous best plan");
-        continue;
-      }
-      else
-      {
-        ROS_INFO_STREAM("Keeping candidate in [renewAndAnalyzeOldTebs] since it is the previous best plan");
-      }
-    }
+//     if(cfg_->hcp.use_gaps)
+//     {
+//       if(*it_teb != best_teb_)
+//       {
+//         it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
+//         ROS_DEBUG_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it is not the previous best plan");
+//         continue;
+//       }
+//       else
+//       {
+//         ROS_INFO_STREAM("Keeping candidate in [renewAndAnalyzeOldTebs] since it is the previous best plan");
+//       }
+//     }
     
     // delete Detours if there is at least one other TEB candidate left in the container
     if (delete_detours && tebs_.size()>1 && it_teb->get()->teb().detectDetoursBackwards(cfg_->hcp.detour_threshold)) //was -0.1
@@ -275,11 +275,10 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
       ROS_WARN_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it detours backwards");
       continue;
     }
-
+    
     // calculate equivalence class for the current candidate
-    EquivalenceClassPtr equivalence_class = calculateEquivalenceClass(it_teb->get()->teb().poses().begin(), it_teb->get()->teb().poses().end(), getCplxFromVertexPosePtr , obstacles_,
-                                                                      it_teb->get()->teb().timediffs().begin(), it_teb->get()->teb().timediffs().end());
-
+    EquivalenceClassPtr equivalence_class = calculateEquivalenceClass(it_teb->get()->teb());
+    
 //     teb_candidates.push_back(std::make_pair(it_teb,H));
 
     // WORKAROUND until the commented code below works
@@ -374,6 +373,20 @@ void HomotopyClassPlanner::updateReferenceTrajectoryViaPoints(bool all_trajector
   }
 }
 
+EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(TimedElasticBand& teb)
+{
+  EquivalenceClassPtr H;
+  if(cfg_->hcp.use_gaps)
+  {
+    H = calculateEquivalenceClass(teb.poses().begin(), teb.poses().end(), egocircle_);
+  }
+  else
+  {
+    H = calculateEquivalenceClass(teb.poses().begin(), teb.poses().end(), getCplxFromVertexPosePtr, obstacles_,
+                                  teb.timediffs().begin(), teb.timediffs().end());
+  }
+  return H;
+}
 
 void HomotopyClassPlanner::exploreEquivalenceClassesAndInitTebs(const PoseSE2& start, const PoseSE2& goal, double dist_to_obst, const geometry_msgs::Twist* start_vel)
 {
@@ -397,7 +410,7 @@ void HomotopyClassPlanner::exploreEquivalenceClassesAndInitTebs(const PoseSE2& s
 
   visualization_->publishTebContainer(tebs_, "initial_plan");
   
-  // now explore new homotopy classes and initialize tebs if new ones are found. The appropriate createGraph method is chosen via polymorphism.
+  // now explore new homotopy classes and initialize tebs if new ones are found. The appropriate createGraph method is chosen via polymorphism.    
   graph_search_->createGraph(start,goal,dist_to_obst,cfg_->hcp.obstacle_heading_threshold, start_vel);
   
   ROS_INFO_STREAM_NAMED("timing", "[exploreEquivalenceClassesAndInitTebs] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
@@ -413,19 +426,8 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const PoseSE2& start
   if (start_velocity)
     candidate->setVelocityStart(*start_velocity);
 
-  EquivalenceClassPtr H;
-  if(!cfg_->hcp.use_gaps)
-  {
-    H = calculateEquivalenceClass(candidate->teb().poses().begin(), candidate->teb().poses().end(), getCplxFromVertexPosePtr, obstacles_,
-                                  candidate->teb().timediffs().begin(), candidate->teb().timediffs().end());
-  }
-//   else
-//   {
-//     H = calculateEquivalenceClass(candidate->teb().poses().begin(), candidate->teb().poses().end(), getCplxFromVertexPosePtr, egocircle_->getGlobalGaps(),
-//                                   candidate->teb().timediffs().begin(), candidate->teb().timediffs().end());
-//   }
-
-
+  EquivalenceClassPtr H = calculateEquivalenceClass(candidate->teb());
+  
   if(addEquivalenceClassIfNew(H))
   {
     ROS_WARN_STREAM("Added new TEB! [Start/Goal]");
@@ -449,8 +451,7 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(const std::vector<ge
     candidate->setVelocityStart(*start_velocity);
 
   // store the h signature of the initial plan to enable searching a matching teb later.
-  initial_plan_eq_class_ = calculateEquivalenceClass(candidate->teb().poses().begin(), candidate->teb().poses().end(), getCplxFromVertexPosePtr, obstacles_,
-                                                     candidate->teb().timediffs().begin(), candidate->teb().timediffs().end());
+  initial_plan_eq_class_ = calculateEquivalenceClass(candidate->teb());
 
   if(addEquivalenceClassIfNew(initial_plan_eq_class_, true)) // also prevent candidate from deletion
   {

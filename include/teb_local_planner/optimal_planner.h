@@ -692,6 +692,8 @@ protected:
   const ViaPointContainer* via_points_; //!< Store via points for planning
   const EgoCircleInterface* egocircle_;
   
+  visualization_msgs::MarkerArray gap_markers_;
+  
   ros::Publisher gap_pub_;
   
   double cost_; //!< Store cost value of the current hyper-graph

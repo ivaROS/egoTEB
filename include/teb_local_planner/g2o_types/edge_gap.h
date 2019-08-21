@@ -98,6 +98,10 @@ public:
     //_measurement = NULL;
   }
  
+ // cost function implementation for testing costs of other points
+ double calculateError(Eigen::Vector2d pos);
+ 
+ 
   /**
    * @brief Actual cost function
    */    
@@ -154,7 +158,8 @@ public:
 //     initial_pos_ = initial_pos;
 //   }
   
-protected:
+//protected:
+public:
   Eigen::Vector2d initial_pos_, left_bnv_, right_bnv_;
   
 public:         

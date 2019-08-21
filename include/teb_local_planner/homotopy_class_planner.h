@@ -380,6 +380,9 @@ public:
    */
   virtual bool isHorizonReductionAppropriate(const std::vector<geometry_msgs::PoseStamped>& initial_plan) const;
 
+  
+  EquivalenceClassPtr calculateEquivalenceClass(TimedElasticBand& teb);
+  
   /**
    * @brief Calculate the equivalence class of a path
    *
@@ -397,9 +400,8 @@ public:
   EquivalenceClassPtr calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const ObstContainer* obstacles = NULL,
                                                 boost::optional<TimeDiffSequence::iterator> timediff_start = boost::none, boost::optional<TimeDiffSequence::iterator> timediff_end = boost::none);
 
-  template<typename BidirIter, typename Fun>
-  EquivalenceClassPtr calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<std::vector<ego_circle::EgoCircularPoint> >& gaps,
-                                                boost::optional<TimeDiffSequence::iterator> timediff_start = boost::none, boost::optional<TimeDiffSequence::iterator> timediff_end = boost::none);
+  template<typename BidirIter>
+  EquivalenceClassPtr calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, const EgoCircleInterface* egocircle);
   
   /**
    * @brief Read-only access to the internal trajectory container.

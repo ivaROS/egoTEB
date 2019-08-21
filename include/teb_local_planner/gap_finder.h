@@ -10,7 +10,7 @@ namespace teb_local_planner
 class GapFinderGraph : public GraphSearchInterface
 {
 public:
-  GapFinderGraph(const TebConfig& cfg, HomotopyClassPlanner* hcp, const EgoCircleInterface* egocircle) : GraphSearchInterface(cfg, hcp), egocircle_(egocircle){}
+  GapFinderGraph(const TebConfig& cfg, HomotopyClassPlanner* hcp, const EgoCircleInterface* egocircle, const HomotopyClassPlanner::EquivalenceClassContainer& equivalency_classes) : GraphSearchInterface(cfg, hcp), egocircle_(egocircle), equivalency_classes_(equivalency_classes){}
 
   virtual ~GapFinderGraph(){}
 
@@ -33,6 +33,7 @@ public:
   
 protected:
   const EgoCircleInterface* egocircle_;
+  const HomotopyClassPlanner::EquivalenceClassContainer& equivalency_classes_;
 };
 
 } //end namespace

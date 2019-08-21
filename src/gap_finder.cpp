@@ -41,6 +41,23 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
 //   
 //   egocircle_->toGlobal(gap_points);
   
+  std::vector<int> utilized_gaps;
+  for(auto eq : equivalency_classes_)
+  {
+     const GapHSignature* sig = dynamic_cast<GapHSignature*>(eq.first.get());
+     if(sig)
+     {
+        int gap_num= sig->getGap();
+        utilized_gaps.push_back(gap_num);
+        ROS_INFO_STREAM("Added Gap #" << gap_num << " to the 'ignore' list for graph creation");
+     }
+     else
+     {
+       ROS_WARN_STREAM("Signature type is not GapHSignature, cannot prune gaps in graph");
+     }
+  }
+  
+  
   std::vector<GlobalGap> gap_points = egocircle_->getGlobalGaps();
     
   ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
@@ -48,6 +65,14 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   // Start sampling
   for (int i=0; i < gap_points.size(); ++i)
   {
+    auto result1 = std::find(std::begin(utilized_gaps), std::end(utilized_gaps), i);
+    
+    if(result1 == std::end(utilized_gaps))
+    {
+      continue;
+    }
+      
+    
     Eigen::Vector2d sample;
     auto gap_left = gap_points[i][0];
     auto gap_right = gap_points[i][1];

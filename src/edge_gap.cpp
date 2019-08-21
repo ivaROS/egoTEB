@@ -15,18 +15,23 @@ namespace teb_local_planner
     return exp;
   }
   
+  double EdgeGap::calculateError(Eigen::Vector2d pos)
+  {
+    Eigen::Vector2d pnt = pos- initial_pos_;
+    
+    double costl = computeBoundaryError(pnt, left_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
+    double costr = computeBoundaryError(pnt, right_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
+    ROS_DEBUG_STREAM_NAMED("gap_cost","Gap: [" << _measurement[0].x << "," << _measurement[0].y <<"] - [" << _measurement[1].x << "," << _measurement[1].y << "]. Pose: (" << pos.x() << "," << pos.y() << ") Costl: " << costl << ", Costr: " << costr);
+    
+    return std::max(costl, costr);
+  }
+  
   void EdgeGap::computeError()
   {
     ROS_ASSERT_MSG(cfg_ && _measurement, "You must call setTebConfig() and setGap() on EdgeGap()");
     const VertexPose* pose = static_cast<const VertexPose*>(_vertices[0]);
-        
-    Eigen::Vector2d pnt = pose->pose().position() - initial_pos_;
-        
-    double costl = computeBoundaryError(pnt, left_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
-    double costr = computeBoundaryError(pnt, right_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
     
-    _error[0] = std::max(costl, costr);
-    //ROS_INFO_STREAM("Gap: [" << _measurement[0].x << "," << _measurement[0].y <<"] - [" << _measurement[1].x << "," << _measurement[1].y << "]. Pose: (" << pose->pose().position().x() << "," << pose->pose().position().y() << ") Costl: " << costl << ", Costr: " << costr);
+    _error[0] = calculateError(pose->pose().position());
 
     ROS_ASSERT_MSG(std::isfinite(_error[0]), "EdgeObstacle::computeError() _error[0]=%f\n",_error[0]);
   }
@@ -55,8 +60,8 @@ namespace teb_local_planner
   void EdgeGap::setParameters(const TebConfig& cfg, const GlobalGap gap, const Eigen::Vector2d initial_pos)
   {
     cfg_ = &cfg;
-    Eigen::Vector2d gapl(gap[0].x, gap[0].y);
-    Eigen::Vector2d gapr(gap[1].x, gap[1].y);
+    Eigen::Vector2d gapr(gap[0].x, gap[0].y);
+    Eigen::Vector2d gapl(gap[1].x, gap[1].y);
     
     left_bnv_ = getBoundaryNormalVector(gapl, true, initial_pos);
     right_bnv_ = getBoundaryNormalVector(gapr, false, initial_pos);

@@ -198,6 +198,7 @@ add_library(teb_local_planner
    src/edge_gap.cpp
    src/optimal_planner_add_edges_gaps.cpp
    src/egocircle_gaps.cpp
+   src/gap_h_signature.cpp
    #src/ni_initialization.cpp
 )
 

@@ -44,6 +44,7 @@
 #include <teb_local_planner/obstacles.h>
 #include <teb_local_planner/teb_config.h>
 #include <teb_local_planner/timed_elastic_band.h>
+#include <teb_local_planner/egocircle_interface.h>
 
 #include <ros/ros.h>
 #include <math.h>
@@ -56,6 +57,11 @@
 namespace teb_local_planner
 {
 
+
+  
+double intersects(egocircle_utils::gap_finding::Gap gap, const VertexPose* pose1, const VertexPose* pose2, const EgoCircleInterface* egocircle);
+  
+  
 /**
  * @brief The H-signature defines an equivalence relation based on homology in terms of complex calculus.
  *
@@ -75,6 +81,40 @@ public:
     */
     GapHSignature(const TebConfig& cfg) : cfg_(&cfg) {}
 
+    
+    
+    
+//     {
+//       using ego_circle::PolarPoint;
+//       using ego_circle::EgoCircularPoint;
+//       
+//       EgoCircularPoint p1(pose1->pose().position().x(), pose1->pose().position().y());
+//       egocircle->toLocal(p1);
+//       PolarPoint pp1(p1); 
+//       
+//       EgoCircularPoint p2(pose2->pose().position().x(), pose2->pose().position().y());
+//       egocircle->toLocal(p2);
+//       PolarPoint pp2(p2);
+//       
+//       ROS_DEBUG_STREAM("gap_signature", "Gap: " "P1(" << p1.x << "," << p1.y << "): [" << pp1.r << "m @" << pp1.theta << "] P2(" << p2.x << "," << p2.y << "): [" << pp2.r << "m @" << pp2.theta << "]");
+//       
+//       double dist = -1;
+//       if(pp1.theta >= gap.start.theta && pp1.theta <= gap.end.theta && pp2.theta >= gap.start.theta && pp2.theta <= gap.end.theta)
+//       {
+//         double r1e = (pp1.theta - gap.start.theta)/(gap.end.theta - gap.start.theta)*(gap.end.r - gap.start.r)+gap.start.r;
+//         double r2e = (pp2.theta - gap.start.theta)/(gap.end.theta - gap.start.theta)*(gap.end.r - gap.start.r)+gap.start.r;
+//         
+//         double avgr = (r1e + r2e)/2;
+//         
+//         if(pp2.r >= avgr && pp1.r <= avgr)
+//         {
+//           dist = (pp2.r - avgr) + (avgr - pp1.r);
+//         }
+//         
+//       }
+//       return dist;
+//       
+//     }
 
    /**
     * @brief Calculate the H-Signature of a path
@@ -93,38 +133,42 @@ public:
     * @tparam BidirIter Bidirectional iterator type
     * @tparam Fun function of the form std::complex< long double > (const T& point_type)
     */
-    template<typename BidirIter, typename Fun>
-    void calculateHSignature(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<std::vector<ego_circle::EgoCircularPoint> >& gaps)
+    template<typename BidirIter>
+    void calculateHSignature(BidirIter path_start, BidirIter path_end, const EgoCircleInterface* egocircle)
     {
 
       std::advance(path_end, -1); // reduce path_end by 1 (since we check line segments between those path points
       
-      typedef std::complex<long double> cplx;
-      // guess map size (only a really really coarse guess is required
-      // use distance from start to goal as distance to each direction
-      // TODO: one could move the map determination outside this function, since it remains constant for the whole planning interval
-      cplx start = fun_cplx_point(*path_start);
-      cplx end = fun_cplx_point(*path_end); // path_end points to the last point now after calling std::advance before
-      cplx delta = end-start;
-      cplx normal(-delta.imag(), delta.real());
-
+      
+      const auto& gaps = egocircle->getDiscontinuityGaps();
       const int num_gaps = gaps.size();
       
       // iterate path
       while(path_start != path_end)
       {
-        cplx z1 = fun_cplx_point(*path_start);
-        cplx z2 = fun_cplx_point(*boost::next(path_start));
+        auto v1 = *path_start;
+        auto v2 = *boost::next(path_start);
         
         for (std::size_t l=0; l<num_gaps; ++l) // iterate all obstacles
         {
+          egocircle_utils::gap_finding::Gap gap = gaps[l];
           
+          double dist = intersects(gap, v1, v2, egocircle);
+          if(dist >=0)
+          {
+            gap_number_ = l;
+            ROS_INFO_STREAM("Trajectory passes through gap #" << l);
+            return;
+          }
         }
         ++path_start;
       }
+      gap_number_ = -1;
+      ROS_INFO_STREAM("Trajectory does not appear to pass through any gap, so giving it index #" << gap_number_);
     }
 
 
+    
 
    /**
     * @brief Check if two candidate classes are equivalent
@@ -132,7 +176,15 @@ public:
     */
     virtual bool isEqual(const EquivalenceClass& other) const
     {
-        return false;
+      const GapHSignature* hother = dynamic_cast<const GapHSignature*>(&other);
+      if (hother)
+      {
+        return hother->gap_number_ == gap_number_;
+      }
+      else
+        ROS_ERROR("Cannot compare GapHSignature equivalence classes with types other than GapHSignature.");
+      
+        //return false;
     }
 
    /**
@@ -153,12 +205,15 @@ public:
       return true;
     }
 
+    int getGap() const
+    {
+      return gap_number_;
+    }
 
 private:
-
+    int gap_number_;
     const TebConfig* cfg_;
 };
-
 
 } // namespace teb_local_planner
 

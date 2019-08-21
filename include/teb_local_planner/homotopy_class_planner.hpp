@@ -42,7 +42,7 @@
 
 namespace teb_local_planner
 {
-  
+
   
 template<typename BidirIter, typename Fun>
 EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const ObstContainer* obstacles,
@@ -54,12 +54,6 @@ EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter pa
     H->calculateHSignature(path_start, path_end, fun_cplx_point, obstacles, timediff_start, timediff_end);
     return EquivalenceClassPtr(H);
   }
-//   else if(cfg_->hcp.use_gaps)
-//   {
-//     GapHSignature* H = new GapHSignature(*cfg_);
-//     H->calculateHSignature(path_start, path_end, fun_cplx_point, obstacles);
-//     return EquivalenceClassPtr(H);
-//   }
   else
   {
     HSignature* H = new HSignature(*cfg_);
@@ -68,13 +62,13 @@ EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter pa
   }
 }
 
-template<typename BidirIter, typename Fun>
-EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const std::vector<std::vector<ego_circle::EgoCircularPoint> >& gaps,
-                                                                    boost::optional<TimeDiffSequence::iterator> timediff_start, boost::optional<TimeDiffSequence::iterator> timediff_end)
+
+template<typename BidirIter>
+EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(BidirIter path_start, BidirIter path_end, const EgoCircleInterface* egocircle)
 {
-    GapHSignature* H = new GapHSignature(*cfg_);
-    H->calculateHSignature(path_start, path_end, fun_cplx_point, gaps);
-    return EquivalenceClassPtr(H);
+  GapHSignature* H = new GapHSignature(*cfg_);
+  H->calculateHSignature(path_start, path_end, egocircle);
+  return EquivalenceClassPtr(H);
 }
 
 template<typename BidirIter, typename Fun>
@@ -89,8 +83,7 @@ TebOptimalPlannerPtr HomotopyClassPlanner::addAndInitNewTeb(BidirIter path_start
   if (start_velocity)
     candidate->setVelocityStart(*start_velocity);
 
-  EquivalenceClassPtr H = calculateEquivalenceClass(candidate->teb().poses().begin(), candidate->teb().poses().end(), getCplxFromVertexPosePtr, obstacles_,
-                                                    candidate->teb().timediffs().begin(), candidate->teb().timediffs().end());
+  EquivalenceClassPtr H = calculateEquivalenceClass(candidate->teb());
 
   if(addEquivalenceClassIfNew(H))
   {

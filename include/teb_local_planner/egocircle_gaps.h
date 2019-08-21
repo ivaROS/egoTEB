@@ -27,6 +27,8 @@ namespace egocircle_utils
       PolarPoint start, end;
     };
     
+    std::string toString(const Gap& gap);
+    
     std::vector<Gap> getDiscontinuityGaps(const egocircle_utils::Inflator& inflator);
     
     std::vector<Gap> getCollapsedGaps(const std::vector<Gap>& gaps, double max_r);

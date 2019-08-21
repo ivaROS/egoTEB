@@ -55,6 +55,8 @@ figure(n); n=n+1;
 gap_left = [4,2];
 gap_right = [5,-1];
 
+x0 = [0.5,1.4];
+
 pose = [3, -.25];
 
 poses_y = -1:.05:2;
@@ -66,22 +68,22 @@ plot(gap_left(1), gap_left(2), '*r')
 hold on
 plot(gap_right(1), gap_right(2), '*r')
 
-line([0, gap_left(1)],[0, gap_left(2)])
-line([0, gap_right(1)],[0, gap_right(2)])
+line([x0(1), gap_left(1)],[x0(2), gap_left(2)])
+line([x0(1), gap_right(1)],[x0(2), gap_right(2)])
 
-left_norm = getLeftBorderNormal(gap_left);
-right_norm = getRightBorderNormal(gap_right);
+left_norm = getLeftBorderNormal(gap_left-x0);
+right_norm = getRightBorderNormal(gap_right-x0);
 
-line([0, left_norm(1)],[0, left_norm(2)], 'Color','green','LineStyle','--')
-line([0, right_norm(1)],[0, right_norm(2)], 'Color','green','LineStyle','--')
+line([x0(1), left_norm(1)+x0(1)],[x0(2), left_norm(2)+x0(2)], 'Color','green','LineStyle','--')
+line([x0(1), right_norm(1)+x0(1)],[x0(2), right_norm(2)+x0(2)], 'Color','green','LineStyle','--')
 
 plot(poses(1,:), poses(2,:), '*k')
 
 ldot = dot(pose, left_norm);
 rdot = dot(pose, right_norm);
 
-ldot = left_norm * poses;
-rdot = right_norm * poses;
+ldot = left_norm * (poses-x0');
+rdot = right_norm * (poses-x0');
 
 delta = .1;
 offset = .1;
