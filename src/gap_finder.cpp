@@ -57,34 +57,55 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
      }
   }
   
+  double gap_point_buffer_dist = 0.5;
   
   std::vector<GlobalGap> gap_points = egocircle_->getGlobalGaps();
     
   ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
-
+  
   // Start sampling
   for (int i=0; i < gap_points.size(); ++i)
   {
     auto result1 = std::find(std::begin(utilized_gaps), std::end(utilized_gaps), i);
     
-    if(result1 == std::end(utilized_gaps))
+    if(result1 != std::end(utilized_gaps))
     {
       continue;
     }
+    
+    GlobalGap gap = gap_points[i];
+    
+    double best_dot_p = -1;
+    Eigen::Vector2d best_gap_point;
+    
+    int num_segments = gap.size() - 1;
+    for(int segment=0; segment < num_segments; segment++)
+    {
+      auto gap_p = gap[segment];
+      auto gap_p2 = gap[segment + 1];
       
+      Eigen::Vector2d midpoint;
+      midpoint(0)=(gap_p.x+gap_p2.x)/2;
+      midpoint(1)=(gap_p.y+gap_p2.y)/2;
+      
+      Eigen::Vector2d distgap = midpoint-start.position();
+      distgap.normalize();
+      
+      double dot_p = midpoint.dot(diff);
+      // Check if the direction is backwards:
+      if (dot_p > best_dot_p)
+      {
+        best_dot_p = dot_p;
+        best_gap_point = midpoint + distgap*gap_point_buffer_dist;
+      }
+    }
+ 
     
-    Eigen::Vector2d sample;
-    auto gap_left = gap_points[i][0];
-    auto gap_right = gap_points[i][1];
-    
-    sample(0)=(gap_left.x+gap_right.x)/2;
-    sample(1)=(gap_left.y+gap_right.y)/2;
-    
-    ROS_INFO_STREAM("Gap #" << i << ": [" << sample(0) << "," << sample(1) << "]"); 
+    ROS_INFO_STREAM("Gap #" << i << ": [" << best_gap_point(0) << "," << best_gap_point(1) << "]"); 
     
     // Add new vertex
     HcGraphVertexType v = boost::add_vertex(graph_);
-    graph_[v].pos = sample;
+    graph_[v].pos = best_gap_point;
   }
 
   HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
@@ -146,7 +167,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
       // Check if the direction is backwards:
       if (distij.dot(diff)<=obstacle_heading_threshold)
       {
-        //continue; // diff is already normalized
+        continue; // diff is already normalized
       }
         
       // Add edge between start and gap verticies

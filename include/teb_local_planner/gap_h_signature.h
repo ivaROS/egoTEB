@@ -45,6 +45,7 @@
 #include <teb_local_planner/teb_config.h>
 #include <teb_local_planner/timed_elastic_band.h>
 #include <teb_local_planner/egocircle_interface.h>
+#include <teb_local_planner/gap_intersection.h>
 
 #include <ros/ros.h>
 #include <math.h>
@@ -57,10 +58,6 @@
 namespace teb_local_planner
 {
 
-
-  
-double intersects(egocircle_utils::gap_finding::Gap gap, const VertexPose* pose1, const VertexPose* pose2, const EgoCircleInterface* egocircle);
-  
   
 /**
  * @brief The H-signature defines an equivalence relation based on homology in terms of complex calculus.
@@ -140,7 +137,7 @@ public:
       std::advance(path_end, -1); // reduce path_end by 1 (since we check line segments between those path points
       
       
-      const auto& gaps = egocircle->getDiscontinuityGaps();
+      const auto& gaps = egocircle->getGlobalGaps();
       const int num_gaps = gaps.size();
       
       // iterate path
@@ -151,9 +148,9 @@ public:
         
         for (std::size_t l=0; l<num_gaps; ++l) // iterate all obstacles
         {
-          egocircle_utils::gap_finding::Gap gap = gaps[l];
+          auto gap = gaps[l];
           
-          double dist = intersects(gap, v1, v2, egocircle);
+          double dist = intersects(gap, v1, v2);
           if(dist >=0)
           {
             gap_number_ = l;

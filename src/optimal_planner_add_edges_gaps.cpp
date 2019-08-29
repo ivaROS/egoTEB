@@ -1,5 +1,6 @@
 #include <teb_local_planner/optimal_planner.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <teb_local_planner/gap_intersection.h>
 
 namespace teb_local_planner
 {
@@ -112,27 +113,28 @@ void addMarker(visualization_msgs::MarkerArray& markers, const EdgeGap* edge, do
   //markers.markers.push_back(gap_marker);
 }
 
-double intersects(GlobalGap gap, const VertexPose* pose1, const VertexPose* pose2)
-{
-  Eigen::Vector2d p3(gap[0].x, gap[0].y);
-  Eigen::Vector2d p4(gap[1].x, gap[1].y);
-  
-  Eigen::Vector2d p1 = pose1->pose().position();
-  Eigen::Vector2d p2 = pose2->pose().position();
-  
-  Eigen::Matrix2d m;
-  m.col(0) = p4-p3;
-  m.col(1) = -(p2-p1);
-  
-  Eigen::Vector2d res = m.inverse() * (p1-p3);
-  
-  if(res.x()>0 && res.x() < 1 && res.y() >0 && res.y() < 1)
-  {
-    return 1;
-  }
-  return -1;
-}
+// double intersects(GlobalGap gap, const VertexPose* pose1, const VertexPose* pose2)
+// {
+//   Eigen::Vector2d p3(gap[0].x, gap[0].y);
+//   Eigen::Vector2d p4(gap[1].x, gap[1].y);
+//   
+//   Eigen::Vector2d p1 = pose1->pose().position();
+//   Eigen::Vector2d p2 = pose2->pose().position();
+//   
+//   Eigen::Matrix2d m;
+//   m.col(0) = p4-p3;
+//   m.col(1) = -(p2-p1);
+//   
+//   Eigen::Vector2d res = m.inverse() * (p1-p3);
+//   
+//   if(res.x()>0 && res.x() < 1 && res.y() >0 && res.y() < 1)
+//   {
+//     return 1;
+//   }
+//   return -1;
+// }
 
+/*
 double intersects2(egocircle_utils::gap_finding::Gap gap, const VertexPose* pose1, const VertexPose* pose2, const EgoCircleInterface* egocircle)
 {
   using ego_circle::PolarPoint;
@@ -165,6 +167,8 @@ double intersects2(egocircle_utils::gap_finding::Gap gap, const VertexPose* pose
   
   
   return dist;
+}
+*/
   
   /*
   PolarPoint pmid = gap.getMid();
@@ -189,7 +193,7 @@ double intersects2(egocircle_utils::gap_finding::Gap gap, const VertexPose* pose
     return 1;
   }
   return -1;*/
-}
+
   
 void TebOptimalPlanner::AddEdgesGaps()
 {
@@ -227,47 +231,25 @@ void TebOptimalPlanner::AddEdgesGaps()
   
   double offset = 0;
   
-  const std::vector<egocircle_utils::gap_finding::Gap>& gaps = egocircle_->getDiscontinuityGaps();
-  const std::vector<GlobalGap>& global_gaps = egocircle_->getGlobalGaps();
+  //const std::vector<egocircle_utils::gap_finding::Gap>& gaps = egocircle_->getDiscontinuityGaps();
+  const std::vector<GlobalGap>& gaps = egocircle_->getGlobalGaps();
   
   //Update with line intersection logic such as from here: http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
   //Point to line: https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
   for(int j = 0; j < gaps.size(); ++j)
   {
-//     Eigen::Vector2d gap_l(gap[0].x, gap[0].y);
-//     Eigen::Vector2d gap_r(gap[1].x, gap[1].y);
-    
-    //Eigen::Vector2d gap_vec((gap[1].x - gap[0].x), (gap[1].y - gap[0].y));
-//     Eigen::Vector2d gap_vec = gap_r - gap_l;
-//     double gap_norm = gap_vec.norm();
-//     Eigen::Vector2d normed_vec = gap_vec/gap_norm;
-    
+
     int closest_pose = -1;
+    Eigen::Vector2d intersection_point;
+    
     double closest_distance = 0;
     for (int i=0; i < teb_.sizePoses()-2; i++)
     {
-      double res = intersects2(gaps[j], teb_.PoseVertex(i), teb_.PoseVertex(i+1), egocircle_);
-      if(res >=0)
+      if(intersects(gaps[j], teb_.PoseVertex(i), teb_.PoseVertex(i+1), &intersection_point))
       {
-        closest_distance = res;
         closest_pose = i;
+        break;
       }
-      /*
-      Eigen::Vector2d pos = teb_.PoseVertex(i)->pose().position();
-      
-      Eigen::Vector2d pos_v = pos - gap_l;
-      
-      double vdot = pos_v.dot(normed_vec);
-      if(vdot > 0 && vdot < gap_norm)
-      {
-        double gap_dist = (gap_vec.y()*pos.x() - gap_vec.x()*pos.y()+ gap_r.x()*gap_l.y() - gap_r.y()*gap_l.x())/gap_norm;
-        if(closest_pose < 0 || gap_dist < closest_distance)
-        {
-          closest_distance = gap_dist;
-          closest_pose = i;
-        }
-      }
-      */
     }
     
     if(closest_pose >=0)
@@ -276,11 +258,9 @@ void TebOptimalPlanner::AddEdgesGaps()
       EdgeGap* gap_edge = new EdgeGap;
       gap_edge->setVertex(0,teb_.PoseVertex(closest_pose));
       gap_edge->setInformation(information_gap);
-      gap_edge->setParameters(*cfg_, global_gaps[j], start_pos);
+      gap_edge->setParameters(*cfg_, gaps[j], start_pos);
       optimizer_->addEdge(gap_edge);
-      
-      
-      
+
       addMarker(markers, gap_edge, offset, &teb_.PoseVertex(closest_pose)->pose().position());
       
       offset += .06;

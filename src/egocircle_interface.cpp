@@ -52,13 +52,21 @@ namespace teb_local_planner
         std::vector<ego_circle::EgoCircularPoint> gap_vec;
         
         egocircle_utils::gap_finding::Gap& gap = gaps_[i];
-        ego_circle::EgoCircularPoint point = gap.start;
-        toGlobal(point);
-        gap_vec.push_back(point);
         
-        point = gap.end;
-        toGlobal(point);
-        gap_vec.push_back(point);
+        double MAX_GAP_RAD = std::acos(-1)/8;
+        
+        int num_segments = std::ceil((gap.end.theta-gap.start.theta) / MAX_GAP_RAD);
+        
+        for(int segment = 0; segment < num_segments + 1; segment++)
+        {
+          double interp_r = gap.start.r + (gap.end.r - gap.start.r)*segment/num_segments;
+          double interp_th = gap.start.theta + (gap.end.theta - gap.start.theta)*segment/num_segments;
+          
+          ego_circle::PolarPoint p(interp_r, interp_th);
+          ego_circle::EgoCircularPoint global_point(p);
+          toGlobal(global_point);
+          gap_vec.push_back(global_point);
+        }
         
         global_gaps_.push_back(gap_vec);
       }

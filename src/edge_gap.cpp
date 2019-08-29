@@ -60,8 +60,8 @@ namespace teb_local_planner
   void EdgeGap::setParameters(const TebConfig& cfg, const GlobalGap gap, const Eigen::Vector2d initial_pos)
   {
     cfg_ = &cfg;
-    Eigen::Vector2d gapr(gap[0].x, gap[0].y);
-    Eigen::Vector2d gapl(gap[1].x, gap[1].y);
+    Eigen::Vector2d gapr(gap.front().x, gap.front().y);
+    Eigen::Vector2d gapl(gap.back().x, gap.back().y);
     
     left_bnv_ = getBoundaryNormalVector(gapl, true, initial_pos);
     right_bnv_ = getBoundaryNormalVector(gapr, false, initial_pos);

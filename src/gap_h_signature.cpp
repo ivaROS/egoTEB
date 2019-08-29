@@ -1,45 +1,50 @@
 
-#include <teb_local_planner/gap_h_signature.h>
+#include <teb_local_planner/gap_intersection.h>
 
 namespace teb_local_planner
 {
-    // TODO: outer loop should iterate over trajectories (to reduce how many times points must be transformed), and inner loops should check each gap against each link
-    double intersects(egocircle_utils::gap_finding::Gap gap, const VertexPose* pose1, const VertexPose* pose2, const EgoCircleInterface* egocircle)
+    bool intersects(const GlobalGap& gap, const VertexPose* pose1, const VertexPose* pose2, Eigen::Vector2d* intersection)
     {
-      using ego_circle::PolarPoint;
-      using ego_circle::EgoCircularPoint;
+      Eigen::Vector2d p1 = pose1->pose().position();
+      Eigen::Vector2d p2 = pose2->pose().position();
       
-      EgoCircularPoint p1(pose1->pose().position().x(), pose1->pose().position().y());
-      egocircle->toLocal(p1);
-      PolarPoint pp1(p1); 
-      
-      EgoCircularPoint p2(pose2->pose().position().x(), pose2->pose().position().y());
-      egocircle->toLocal(p2);
-      PolarPoint pp2(p2);
-      
-      ROS_DEBUG_STREAM_NAMED("gap_signature", "Gap: " << toString(gap) << "P1(" << p1.x << "," << p1.y << "): [" << pp1.r << "m @" << pp1.theta << "] P2(" << p2.x << "," << p2.y << "): [" << pp2.r << "m @" << pp2.theta << "]");
-      
-      double dist = -1;
-      if(pp1.theta >= gap.start.theta && pp1.theta <= gap.end.theta && pp2.theta >= gap.start.theta && pp2.theta <= gap.end.theta)
+      int num_segments = gap.size() - 1;
+      for(int segment=0; segment < num_segments; segment++)
       {
-        double r1e = (pp1.theta - gap.start.theta)/(gap.end.theta - gap.start.theta)*(gap.end.r - gap.start.r)+gap.start.r;
-        double r2e = (pp2.theta - gap.start.theta)/(gap.end.theta - gap.start.theta)*(gap.end.r - gap.start.r)+gap.start.r;
+        auto gap_p = gap[segment];
+        auto gap_p2 = gap[segment + 1];
         
-        double avgr = (r1e + r2e)/2;
+        Eigen::Vector2d p3(gap_p.x, gap_p.y);
+        Eigen::Vector2d p4(gap_p2.x, gap_p2.y);
         
-        ROS_DEBUG_STREAM_NAMED("gap_signature", "r1e: " << r1e << ", r2e: " << r2e);// << " avgr: " << avgr);
-        
-        if(pp2.r >= r2e && pp1.r <= r1e)
+        if(intersects(p1, p2, p3, p4, intersection))
         {
-          ROS_DEBUG_STREAM_NAMED("gap_signature", "Gap crossing!");
-          dist = (pp2.r - avgr) + (avgr - pp1.r);
+          return true;
         }
-        
       }
-      return dist;
       
+      return false;
     }
     
+    //based on http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
+    bool intersects(const Eigen::Vector2d& p1, const Eigen::Vector2d& p2, const Eigen::Vector2d& p3, const Eigen::Vector2d& p4, Eigen::Vector2d* intersection)
+    {
+      Eigen::Matrix2d m;
+      m.col(0) = p4-p3;
+      m.col(1) = -(p2-p1);
+      
+      Eigen::Vector2d res = m.inverse() * (p1-p3);
+      
+      if(res.x()>0 && res.x() < 1 && res.y() >0 && res.y() < 1)
+      {
+        if(intersection)
+        {
+          *intersection = p1 + res.y()*(p2-p1);
+        }
+        return true;
+      }
+      return false;
+    }
   
 } // namespace teb_local_planner
 

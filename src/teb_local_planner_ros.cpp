@@ -146,9 +146,13 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     odom_helper_.setOdomTopic(cfg_.odom_topic);
 
     //ros::NodeHandle pnh("~");
-    egocircle_ = std::make_shared<EgoCircleInterface>(nh, nh);
-    egocircle_wrapper_ = std::make_shared<egocircle_utils::InterfaceUpdater>(egocircle_, nh, nh);
-    egocircle_wrapper_->init();
+    // TODO: maybe do this in reconfigureCB if enabled, and deconstruct it if not?
+    //if (cfg_.obstacles.include_egocircle_obstacles)
+    {
+      egocircle_ = std::make_shared<EgoCircleInterface>(nh, nh);
+      egocircle_wrapper_ = std::make_shared<egocircle_utils::InterfaceUpdater>(egocircle_, nh, nh);
+      egocircle_wrapper_->init();
+    }
     
     // setup dynamic reconfigure
     dynamic_recfg_ = boost::make_shared< dynamic_reconfigure::Server<TebLocalPlannerReconfigureConfig> >(nh);
@@ -329,7 +333,10 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // also consider custom obstacles (must be called after other updates, since the container is not cleared)
   updateObstacleContainerWithCustomObstacles();
   
-  updateObstacleContainerWithEgocircle(tf_plan_to_global.stamp_);
+  //if(cfg_.obstacles.include_egocircle_obstacles)
+  {
+    updateObstacleContainerWithEgocircle(tf_plan_to_global.stamp_);
+  }
     
   // Do not allow config changes during the following optimization step
   boost::mutex::scoped_lock cfg_lock(cfg_.configMutex());
@@ -679,7 +686,7 @@ bool TebLocalPlannerROS::pruneGlobalPlan(const tf::TransformListener& tf, const 
   return true;
 }
       
-
+// TODO: make egocircle version, using egocircle radius rather than costmap
 bool TebLocalPlannerROS::transformGlobalPlan(const tf::TransformListener& tf, const std::vector<geometry_msgs::PoseStamped>& global_plan,
                   const tf::Stamped<tf::Pose>& global_pose, const costmap_2d::Costmap2D& costmap, const std::string& global_frame, double max_plan_length,
                   std::vector<geometry_msgs::PoseStamped>& transformed_plan, int* current_goal_idx, tf::StampedTransform* tf_plan_to_global) const
