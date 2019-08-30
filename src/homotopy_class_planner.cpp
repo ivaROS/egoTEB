@@ -276,6 +276,17 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
       continue;
     }
     
+    if(cfg_->use_gaps_)
+    {
+      bool teb_collides = checkTebValidity(it_teb_->get()->teb());
+      if(teb_collides)
+      {
+        it_teb = tebs_.erase(it_teb);
+        ROS_WARN_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it definitely collides");
+        continue;
+      }
+    }
+    
     // calculate equivalence class for the current candidate
     EquivalenceClassPtr equivalence_class = calculateEquivalenceClass(it_teb->get()->teb());
     
