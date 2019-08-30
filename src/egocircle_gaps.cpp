@@ -22,20 +22,31 @@ namespace egocircle_utils
     void addGapsToMarker(visualization_msgs::Marker& marker, const std_msgs::ColorRGBA& color, const std::vector<Gap>& gaps)
     {
       for( Gap gap : gaps)
-      {
-        geometry_msgs::Point gap_r;
-        gap_r.x = gap.start.r*std::cos(gap.start.theta);
-        gap_r.y = gap.start.r*std::sin(gap.start.theta);
+      {        
+        double num_divs = std::ceil((gap.end.theta - gap.start.theta) / .1);
         
-        geometry_msgs::Point gap_l;
-        gap_l.x = gap.end.r*std::cos(gap.end.theta);
-        gap_l.y = gap.end.r*std::sin(gap.end.theta);
+        ROS_INFO_STREAM("Gap: " << toString(gap) << " num_divs=" << num_divs);
         
-        marker.points.push_back(gap_r);
-        marker.points.push_back(gap_l);
-        
-        marker.colors.push_back(color);
-        marker.colors.push_back(color);
+        for(int i=0; i < num_divs+1; i++)
+        {
+          double r= gap.start.r + (gap.end.r-gap.start.r)*i/num_divs;
+          double theta = gap.start.theta + (gap.end.theta-gap.start.theta)*i/num_divs;
+          
+          geometry_msgs::Point p;
+          p.x = r*std::cos(theta);
+          p.y = r*std::sin(theta);
+          p.z = .1;
+          
+          ROS_INFO_STREAM("i: " << i << ", r: " << r << ", theta: " << theta);
+          
+          if(i > 0 && i < num_divs)
+          {
+            marker.points.push_back(marker.points.back());
+            marker.colors.push_back(color);
+          }
+          marker.points.push_back(p);
+          marker.colors.push_back(color);
+        }
       }
     }
     
@@ -63,7 +74,8 @@ namespace egocircle_utils
       
       std_msgs::ColorRGBA collapsed_gap_color;
       collapsed_gap_color.a = .5;
-      collapsed_gap_color.g = 1;
+      collapsed_gap_color.r = 1;
+      collapsed_gap_color.g = .7;
       
       addGapsToMarker(collapsed_gap_marker, collapsed_gap_color, collapsed_gaps);
       
@@ -151,6 +163,7 @@ namespace egocircle_utils
     
     std::vector<Gap> getCollapsedGaps(const std::vector<Gap>& gaps, double max_r)
     {
+      constexpr double PI = std::acos(-1);
       
       ROS_INFO_STREAM("Collapsing gaps:");
       std::vector<Gap> collapsed_gaps;
@@ -167,11 +180,16 @@ namespace egocircle_utils
           if(prev_gap.end.r == max_r && cur_gap.start.r == max_r)
           {
             Gap gap(prev_gap.start, cur_gap.end);
+            if(gap.start.theta > gap.end.theta)
+            {
+              gap.end.theta += 2*PI;
+            }
+            
             collapsed_gaps.push_back(gap);
             start_ind++;
             ROS_INFO_STREAM("Collapsed " << toString(prev_gap) << " and " << toString(cur_gap) << " into " << toString(gap));
           }
-          else
+          else if(cur_gap.end.r !=  max_r)  // Only add gap if it wouldn't be collapsed with the next
           {
             collapsed_gaps.push_back(cur_gap);
             ROS_INFO_STREAM("Added " << toString(cur_gap) << " as is");
@@ -185,7 +203,5 @@ namespace egocircle_utils
       
       return collapsed_gaps;
     }
-    
   }
-  
 }
