@@ -186,7 +186,6 @@ namespace egocircle_utils
             }
             
             collapsed_gaps.push_back(gap);
-            start_ind++;
             ROS_INFO_STREAM("Collapsed " << toString(prev_gap) << " and " << toString(cur_gap) << " into " << toString(gap));
           }
           else if(cur_gap.end.r !=  max_r)  // Only add gap if it wouldn't be collapsed with the next
