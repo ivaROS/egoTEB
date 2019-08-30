@@ -27,7 +27,7 @@ namespace egocircle_utils
         
         ROS_INFO_STREAM("Gap: " << toString(gap) << " num_divs=" << num_divs);
         
-        for(int i=0; i < num_divs+1; i++)
+        for(int i=0; i <= num_divs; i++)
         {
           double r= gap.start.r + (gap.end.r-gap.start.r)*i/num_divs;
           double theta = gap.start.theta + (gap.end.theta-gap.start.theta)*i/num_divs;
@@ -39,7 +39,7 @@ namespace egocircle_utils
           
           ROS_INFO_STREAM("i: " << i << ", r: " << r << ", theta: " << theta);
           
-          if(i > 0 && i < num_divs)
+          if(i > 1)
           {
             marker.points.push_back(marker.points.back());
             marker.colors.push_back(color);
