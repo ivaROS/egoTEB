@@ -38,6 +38,7 @@
 
 #include <teb_local_planner/homotopy_class_planner.h>
 #include <teb_local_planner/gap_finder.h>
+#include <teb_local_planner/teb_validity_checker.h>
 
 #include <limits>
 
@@ -276,9 +277,9 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
       continue;
     }
     
-    if(cfg_->use_gaps_)
+    if(cfg_->hcp.use_gaps)
     {
-      bool teb_collides = checkTebValidity(it_teb_->get()->teb());
+      bool teb_collides = checkTebValidity(it_teb->get()->teb(), egocircle_);
       if(teb_collides)
       {
         it_teb = tebs_.erase(it_teb);

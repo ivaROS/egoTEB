@@ -149,12 +149,12 @@ public:
         for (std::size_t l=0; l<num_gaps; ++l) // iterate all obstacles
         {
           auto gap = gaps[l];
-          
-          double dist = intersects(gap, v1, v2);
-          if(dist >=0)
+          Eigen::Vector2d p;
+          bool it = intersects(gap, v1, v2, &p);
+          if(it)
           {
             gap_number_ = l;
-            ROS_INFO_STREAM("Trajectory passes through gap #" << l);
+            ROS_INFO_STREAM("Trajectory passes through gap #" << l << " at [" << p.x() << "," << p.y() << "]");
             return;
           }
         }

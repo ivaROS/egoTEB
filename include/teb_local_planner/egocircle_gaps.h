@@ -1,9 +1,13 @@
 #ifndef EGOCIRCLE_GAPS_H
 #define EGOCIRCLE_GAPS_H
 
-
 #include <egocircle_utils/inflator.h>
 #include <visualization_msgs/MarkerArray.h>
+
+namespace teb_local_planner
+{
+  using GlobalGap = std::vector<ego_circle::EgoCircularPoint>;
+}
 
 namespace egocircle_utils
 {
@@ -11,6 +15,7 @@ namespace egocircle_utils
   {
     using ego_circle::EgoCircularPoint;
     using ego_circle::PolarPoint;
+    using teb_local_planner::GlobalGap;
     
     struct Gap 
     {
@@ -34,6 +39,8 @@ namespace egocircle_utils
     std::vector<Gap> getCollapsedGaps(const std::vector<Gap>& gaps, double max_r);
     
     visualization_msgs::MarkerArray getMarkers(const std::vector<Gap>& raw_gaps, const std::vector<Gap>& collapsed_gaps, std_msgs::Header header);
+    
+    void addGlobalGapsToMarker(visualization_msgs::MarkerArray& markers, const std::vector<GlobalGap>& gaps, std_msgs::Header header);
     
     
     /*

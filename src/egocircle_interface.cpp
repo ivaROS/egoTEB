@@ -41,7 +41,6 @@ namespace teb_local_planner
       
       visualization_msgs::MarkerArray markers = egocircle_utils::gap_finding::getMarkers(raw_gaps, gaps_, scan_msg->header);
       
-      gap_pub_.publish(markers);
       
       global_gaps_.clear();
       int num_gaps = gaps_.size();
@@ -71,6 +70,14 @@ namespace teb_local_planner
         global_gaps_.push_back(gap_vec);
       }
       
+      std_msgs::Header global_header;
+      global_header.stamp = scan_msg->header.stamp;
+      global_header.frame_id = "odom";
+      egocircle_utils::gap_finding::addGlobalGapsToMarker(markers, global_gaps_, global_header);
+      
+      gap_pub_.publish(markers);
+      
+      
       if(inflated_egocircle_pub_.getNumSubscribers()>0)
       {
         sensor_msgs::LaserScanPtr inflated_scan = inflator_->getMsg();
@@ -90,13 +97,23 @@ namespace teb_local_planner
       return getMinDist(ego_circle::EgoCircularPoint(pose.position.x,pose.position.y)) <=0;
     }
 
-    //TODO: rewrite functions to accept either EgoCircularPoint or PolarPoint (templated) to reduce repeated calculations
+    
     float EgoCircleInterface::getEgoCircleRange(ego_circle::EgoCircularPoint point) const
+    {
+      return container_->getRange(point);
+    }
+
+    float EgoCircleInterface::getEgoCircleRange(ego_circle::PolarPoint point) const
     {
       return container_->getRange(point);
     }
     
     float EgoCircleInterface::getInflatedEgoCircleRange(ego_circle::EgoCircularPoint point) const
+    {
+      return inflator_->getRange(point);
+    }
+    
+    float EgoCircleInterface::getInflatedEgoCircleRange(ego_circle::PolarPoint point) const
     {
       return inflator_->getRange(point);
     }
@@ -159,6 +176,12 @@ namespace teb_local_planner
     {
       return decimator_->getPoints();
     }
+    
+    const egocircle_utils::Inflator* EgoCircleInterface::getInflator() const
+    {
+      return inflator_.get();
+    }
+    
     
     std_msgs::Header EgoCircleInterface::getCurrentHeader() const
     {

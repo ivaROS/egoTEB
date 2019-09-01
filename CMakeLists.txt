@@ -199,6 +199,7 @@ add_library(teb_local_planner
    src/optimal_planner_add_edges_gaps.cpp
    src/egocircle_gaps.cpp
    src/gap_intersection.cpp
+   src/teb_validity_checker.cpp
    #src/ni_initialization.cpp
 )
 

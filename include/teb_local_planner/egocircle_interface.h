@@ -14,7 +14,6 @@
 
 namespace teb_local_planner
 {
-  using GlobalGap = std::vector<ego_circle::EgoCircularPoint>;
   class EgoCircleInterface: public egocircle_utils::UpdateableInterface
   {
   public:
@@ -29,10 +28,11 @@ namespace teb_local_planner
     
     CCResult testCollisionImpl(CollisionChecker::PoseType pose, CCOptions options);
 
-    //TODO: rewrite functions to accept either EgoCircularPoint or PolarPoint (templated) to reduce repeated calculations
     float getEgoCircleRange(ego_circle::EgoCircularPoint point) const;
+    float getEgoCircleRange(ego_circle::PolarPoint point) const;
     
     float getInflatedEgoCircleRange(ego_circle::EgoCircularPoint point) const;
+    float getInflatedEgoCircleRange(ego_circle::PolarPoint point) const;
     
     //TODO: only use 'EgoCircularPoint' type for points in ego frame, use different type for points in global frame.
     ego_circle::EgoCircularPoint getLocalEgoCircularPoint(geometry_msgs::Pose pose) const;
@@ -48,6 +48,8 @@ namespace teb_local_planner
     const std::vector<ego_circle::EgoCircularPoint>& getDecimatedEgoCircularPoints() const;
     
     std_msgs::Header getCurrentHeader() const;
+    
+    const egocircle_utils::Inflator* getInflator() const;
     
     static constexpr const char* DEFAULT_NAME="ego_circle_cost_impl";
     
