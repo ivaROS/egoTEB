@@ -39,7 +39,10 @@ namespace teb_local_planner
       
       gaps_ = egocircle_utils::gap_finding::getCollapsedGaps(raw_gaps, container_->egocircle_radius);
       
-      visualization_msgs::MarkerArray markers = egocircle_utils::gap_finding::getMarkers(raw_gaps, gaps_, scan_msg->header);
+      std_msgs::Header local_header=scan_msg->header;
+      //local_header.frame_id = getLocalFrameId();
+      //local_header.stamp = getStamp();
+      visualization_msgs::MarkerArray markers = egocircle_utils::gap_finding::getMarkers(raw_gaps, gaps_, local_header);
       
       
       global_gaps_.clear();
@@ -71,8 +74,8 @@ namespace teb_local_planner
       }
       
       std_msgs::Header global_header;
-      global_header.stamp = scan_msg->header.stamp;
-      global_header.frame_id = "odom";
+      global_header.stamp = scan_msg->header.stamp; //getStamp();
+      global_header.frame_id = getGlobalFrameId();
       egocircle_utils::gap_finding::addGlobalGapsToMarker(markers, global_gaps_, global_header);
       
       gap_pub_.publish(markers);

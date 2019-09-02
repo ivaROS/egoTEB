@@ -260,7 +260,7 @@ bool TimedElasticBand::initTrajectoryToGoal(BidirIter path_start, BidirIter path
         yaw = g2o::normalize_theta(yaw + M_PI);
       
       
-      ROS_INFO_STREAM("Next: " << toString(next_point) << "; curr: " << toString(curr_point) << "; diff: " << toString(diff_last) << "; diff_norm: " << diff_norm << "; unit_diff: " << toString(unit_diff) << "; yaw: " << yaw);
+      ROS_DEBUG_STREAM("Next: " << toString(next_point) << "; curr: " << toString(curr_point) << "; diff: " << toString(diff_last) << "; diff_norm: " << diff_norm << "; unit_diff: " << toString(unit_diff) << "; yaw: " << yaw);
       
       double remaining_dist = diff_norm;
       
