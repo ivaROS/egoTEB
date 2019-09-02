@@ -63,6 +63,7 @@ namespace egocircle_utils
       std_msgs::ColorRGBA global_gap_color;
       global_gap_color.a = .5;
       global_gap_color.b = 1;
+      
       global_gap_color.g = .5;
       
       
@@ -72,7 +73,7 @@ namespace egocircle_utils
         //ROS_DEBUG_STREAM("Gap: " << toString(gap) << " num_divs=" << num_divs);
         
         int num_divs = gap.size();
-        for(int i=0; i <= num_divs; i++)
+        for(int i=0; i < num_divs; i++)
         {
           const ego_circle::EgoCircularPoint& pt = gap[i];
           
