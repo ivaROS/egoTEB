@@ -78,6 +78,47 @@ namespace teb_local_planner
       global_header.frame_id = getGlobalFrameId();
       egocircle_utils::gap_finding::addGlobalGapsToMarker(markers, global_gaps_, global_header);
       
+      
+      
+      {
+        visualization_msgs::Marker global_gap_marker;
+        global_gap_marker.type = visualization_msgs::Marker::POINTS;
+        global_gap_marker.header = global_header;
+        global_gap_marker.header.stamp = ros::Time::now();
+        global_gap_marker.ns = "transformed_points";
+        global_gap_marker.id = 0;
+        global_gap_marker.action = visualization_msgs::Marker::ADD;
+        global_gap_marker.scale.x = .03;
+        
+        std_msgs::ColorRGBA global_gap_color;
+        global_gap_color.a = .5;
+        global_gap_color.b = 1;
+        
+        global_gap_color.r = .5;
+        
+        global_gap_marker.color = global_gap_color;
+        
+        for(auto it : ego_circle::LaserScanWrapper(*scan_msg))
+        {
+          auto d = ego_circle::PolarPoint(it);
+          ego_circle::EgoCircularPoint pt = d;
+          toGlobal(pt);
+    
+          
+          geometry_msgs::Point p;
+          p.x = pt.x;
+          p.y = pt.y;
+          p.z = .1;
+          
+          global_gap_marker.points.push_back(p);
+        }
+        
+        markers.markers.push_back(global_gap_marker);
+        
+      }
+      
+      
+      
       gap_pub_.publish(markers);
       
       

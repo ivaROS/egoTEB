@@ -52,6 +52,7 @@ namespace egocircle_utils
     
     void addGlobalGapsToMarker(visualization_msgs::MarkerArray& markers, const std::vector<GlobalGap>& gaps, std_msgs::Header header)
     {
+      {
       visualization_msgs::Marker global_gap_marker;
       global_gap_marker.type = visualization_msgs::Marker::LINE_LIST;
       global_gap_marker.header = header;
@@ -95,6 +96,45 @@ namespace egocircle_utils
       }
       
       markers.markers.push_back(global_gap_marker);
+      }
+      
+      
+      
+      {
+        visualization_msgs::Marker global_gap_marker;
+        global_gap_marker.type = visualization_msgs::Marker::POINTS;
+        global_gap_marker.header = header;
+        global_gap_marker.ns = "global_points";
+        global_gap_marker.id = 0;
+        global_gap_marker.action = visualization_msgs::Marker::ADD;
+        global_gap_marker.scale.x = .03;
+        
+        std_msgs::ColorRGBA global_gap_color;
+        global_gap_color.a = .5;
+        global_gap_color.b = .5;
+        
+        global_gap_color.g = .5;
+        
+        
+        for(const GlobalGap& gap : gaps)
+        {        
+          
+          
+            const ego_circle::EgoCircularPoint& pt = gap[0];
+            
+            geometry_msgs::Point p;
+            p.x = pt.x;
+            p.y = pt.y;
+            p.z = .1;
+            
+            global_gap_marker.points.push_back(p);
+            global_gap_marker.colors.push_back(global_gap_color);
+          
+        }
+        
+        markers.markers.push_back(global_gap_marker);
+      }
+      
     }
     
     visualization_msgs::MarkerArray getMarkers(const std::vector<Gap>& raw_gaps, const std::vector<Gap>& collapsed_gaps, std_msgs::Header header)
