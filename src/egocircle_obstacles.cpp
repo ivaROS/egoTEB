@@ -10,7 +10,6 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
   //if(true)
   {  
     Eigen::Vector2d robot_orient = robot_pose_.orientationUnitVec();
-    egocircle_wrapper_->update();
     std_msgs::Header target_header;
     target_header.stamp = stamp;
     target_header.frame_id = global_frame_; //global_pose.frame_id_;
@@ -18,6 +17,8 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
     
     if(egocircle_wrapper_->isReady(target_header))
     {
+      egocircle_wrapper_->update();
+      
       egocircle_->setInflationRadius(robot_inscribed_radius_);
       std::vector<ego_circle::EgoCircularPoint> points = egocircle_->getDecimatedEgoCircularPoints();//getLocalEgoCircularPoints();
       egocircle_->toGlobal(points);
