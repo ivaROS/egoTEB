@@ -81,22 +81,22 @@ namespace teb_local_planner
       
       
       {
-        visualization_msgs::Marker global_gap_marker;
-        global_gap_marker.type = visualization_msgs::Marker::POINTS;
-        global_gap_marker.header = global_header;
-        global_gap_marker.header.stamp = ros::Time::now();
-        global_gap_marker.ns = "transformed_points";
-        global_gap_marker.id = 0;
-        global_gap_marker.action = visualization_msgs::Marker::ADD;
-        global_gap_marker.scale.x = .03;
+        visualization_msgs::Marker global_egocircle_marker;
+        global_egocircle_marker.type = visualization_msgs::Marker::POINTS;
+        global_egocircle_marker.header = global_header;
+        global_egocircle_marker.header.stamp = ros::Time::now();
+        global_egocircle_marker.ns = "transformed_points";
+        global_egocircle_marker.id = 0;
+        global_egocircle_marker.action = visualization_msgs::Marker::ADD;
+        global_egocircle_marker.scale.x = .03;
         
-        std_msgs::ColorRGBA global_gap_color;
-        global_gap_color.a = .5;
-        global_gap_color.b = 1;
+        std_msgs::ColorRGBA global_egocircle_color;
+        global_egocircle_color.a = .5;
+        global_egocircle_color.b = 1;
         
-        global_gap_color.r = .5;
+        global_egocircle_color.r = .5;
         
-        global_gap_marker.color = global_gap_color;
+        global_egocircle_marker.color = global_egocircle_color;
         
         for(auto it : ego_circle::LaserScanWrapper(*scan_msg))
         {
@@ -110,10 +110,10 @@ namespace teb_local_planner
           p.y = pt.y;
           p.z = .1;
           
-          global_gap_marker.points.push_back(p);
+          global_egocircle_marker.points.push_back(p);
         }
         
-        markers.markers.push_back(global_gap_marker);
+        markers.markers.push_back(global_egocircle_marker);
         
       }
       
@@ -162,12 +162,10 @@ namespace teb_local_planner
       return inflator_->getRange(point);
     }
     
-    
     ego_circle::EgoCircularPoint EgoCircleInterface::getLocalEgoCircularPoint(geometry_msgs::Pose pose) const
     {
       return getLocalEgoCircularPoint(pose.position.x, pose.position.y);
     }
-    
     
     ego_circle::EgoCircularPoint EgoCircleInterface::getLocalEgoCircularPoint(float x, float y) const
     {
@@ -175,28 +173,6 @@ namespace teb_local_planner
       toLocal(point);
       return point;
     }
-    
-//     std::vector<EgoCircularPoint> EgoCircleCostImpl::getLocalEgoCircularPoints() const
-//     {
-//       float angle_increment = scan_->angle_increment;
-//       float boundary_radius = getEgoCircleRadius();
-//       
-//       int num_points = scan_->ranges.size();
-//       std::vector<EgoCircularPoint> points;
-//       
-//       float current_angle = scan_->angle_min;
-//       for(int i = 0; i < num_points; ++i)
-//       {
-//         PolarPoint polar_point(scan_->ranges[i],current_angle);
-//         if(polar_point.r < boundary_radius)
-//         {          
-//           points.push_back(polar_point);
-//         }
-//         current_angle += angle_increment;
-//       }
-//       
-//       return points;
-//     }
     
     float EgoCircleInterface::getMinDist(ego_circle::EgoCircularPoint point) const
     {

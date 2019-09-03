@@ -18,7 +18,7 @@ bool checkTebValidity(const TimedElasticBand& teb, const EgoCircleInterface* ego
   const PoseSequence& poses = teb.poses();
   unsigned int num_poses = poses.size();
   
-  ROS_INFO_STREAM_NAMED("checkTebValidity","Inflation radius: " << inflation_radius << ", egocircle_radius: " << egocircle_radius);
+  ROS_DEBUG_STREAM_NAMED("checkTebValidity","Inflation radius: " << inflation_radius << ", egocircle_radius: " << egocircle_radius);
 
   for(unsigned int i = 0; i < num_poses; ++i)
   {
@@ -47,21 +47,21 @@ bool checkTebValidity(const TimedElasticBand& teb, const EgoCircleInterface* ego
         cur_state = CollisionState::Collision;
       }
       
-      ROS_INFO_STREAM_NAMED("checkTebValidity","Vertex Pose [" << pose.x() << "," << pose.y() << "]: Polar pose [" << polar_ego_pose.r << "m @" << polar_ego_pose.theta << "], freespace_range: " << freespace_range);
+      ROS_DEBUG_STREAM_NAMED("checkTebValidity","Vertex Pose [" << pose.x() << "," << pose.y() << "]: Polar pose [" << polar_ego_pose.r << "m @" << polar_ego_pose.theta << "], freespace_range: " << freespace_range);
       
     
       if(polar_ego_pose.r < egocircle_radius && prev_state==CollisionState::Safe && cur_state==CollisionState::Collision)
       {
         //The current global plan will definitely result in collision, so should replan
         ROS_WARN_STREAM_NAMED("checkTebValidity","Went from safe to collision!");
-        return false;
+        return true;
       }
     }
     
     prev_state = cur_state;
     
   }
-
+  return false;
 
 }
 
