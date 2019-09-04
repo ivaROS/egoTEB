@@ -63,6 +63,7 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("exact_arc_length", trajectory.exact_arc_length, trajectory.exact_arc_length);
   nh.param("force_reinit_new_goal_dist", trajectory.force_reinit_new_goal_dist, trajectory.force_reinit_new_goal_dist);
   nh.param("feasibility_check_no_poses", trajectory.feasibility_check_no_poses, trajectory.feasibility_check_no_poses);
+  nh.param("egocircle_feasibility", trajectory.egocircle_feasibility, trajectory.egocircle_feasibility);
   nh.param("publish_feedback", trajectory.publish_feedback, trajectory.publish_feedback);
   
   // Robot
@@ -133,6 +134,7 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("enable_homotopy_class_planning", hcp.enable_homotopy_class_planning, hcp.enable_homotopy_class_planning); 
   nh.param("enable_multithreading", hcp.enable_multithreading, hcp.enable_multithreading); 
   nh.param("simple_exploration", hcp.simple_exploration, hcp.simple_exploration); 
+  nh.param("gap_exploration", hcp.gap_exploration, hcp.gap_exploration); 
   nh.param("use_gaps", hcp.use_gaps, hcp.use_gaps); 
   nh.param("max_number_classes", hcp.max_number_classes, hcp.max_number_classes); 
   nh.param("selection_obst_cost_scale", hcp.selection_obst_cost_scale, hcp.selection_obst_cost_scale);
@@ -152,7 +154,6 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("viapoints_all_candidates", hcp.viapoints_all_candidates, hcp.viapoints_all_candidates);
   nh.param("visualize_hc_graph", hcp.visualize_hc_graph, hcp.visualize_hc_graph); 
   nh.param("visualize_with_time_as_z_axis_scale", hcp.visualize_with_time_as_z_axis_scale, hcp.visualize_with_time_as_z_axis_scale);
-  
   // Recovery
   
   nh.param("shrink_horizon_backup", recovery.shrink_horizon_backup, recovery.shrink_horizon_backup);
@@ -183,6 +184,7 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   trajectory.exact_arc_length = cfg.exact_arc_length;
   trajectory.force_reinit_new_goal_dist = cfg.force_reinit_new_goal_dist;
   trajectory.feasibility_check_no_poses = cfg.feasibility_check_no_poses;
+  trajectory.egocircle_feasibility = cfg.egocircle_feasibility;
   trajectory.publish_feedback = cfg.publish_feedback;
   
   // Robot     
@@ -213,8 +215,8 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   obstacles.obstacle_association_force_inclusion_factor = cfg.obstacle_association_force_inclusion_factor;
   obstacles.obstacle_association_cutoff_factor = cfg.obstacle_association_cutoff_factor;
   obstacles.costmap_obstacles_behind_robot_dist = cfg.costmap_obstacles_behind_robot_dist;
-  obstacles.obstacle_poses_affected = cfg.obstacle_poses_affected;
-
+  obstacles.obstacle_poses_affected = cfg.obstacle_poses_affected;  
+  
   // Gaps
   gaps.gap_boundary_ratio = cfg.gap_boundary_ratio;
   gaps.gap_boundary_threshold = cfg.gap_boundary_threshold;
@@ -254,6 +256,8 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   hcp.selection_alternative_time_cost = cfg.selection_alternative_time_cost;
   hcp.switching_blocking_period = cfg.switching_blocking_period;
   hcp.use_gaps = cfg.use_gaps;
+  hcp.gap_h_signature = cfg.gap_h_signature;
+  
   
   hcp.obstacle_heading_threshold = cfg.obstacle_heading_threshold;
   hcp.roadmap_graph_no_samples = cfg.roadmap_graph_no_samples;
@@ -327,6 +331,8 @@ void TebConfig::checkParameters() const
   if (recovery.oscillation_filter_duration < 0)
       ROS_WARN("TebLocalPlannerROS() Param Warning: parameter oscillation_filter_duration must be >= 0");
   
+  if(hcp.simple_exploration && hcp.gap_exploration)
+    ROS_WARN("TebLocalPlannerROS() Param Warning: simple_exploration and gap_exploration cannot both be set true!");
 }    
 
 void TebConfig::checkDeprecated(const ros::NodeHandle& nh) const

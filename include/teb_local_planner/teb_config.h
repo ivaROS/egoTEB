@@ -82,6 +82,7 @@ public:
     bool exact_arc_length; //!< If true, the planner uses the exact arc length in velocity, acceleration and turning rate computations [-> increased cpu time], otherwise the euclidean approximation is used.
     double force_reinit_new_goal_dist; //!< Reinitialize the trajectory if a previous goal is updated with a seperation of more than the specified value in meters (skip hot-starting)
     int feasibility_check_no_poses; //!< Specify up to which pose on the predicted plan the feasibility should be checked each sampling interval.
+    bool egocircle_feasibility;
     bool publish_feedback; //!< Publish planner feedback containing the full trajectory and a list of active obstacles (should be enabled only for evaluation or debugging purposes)
   } trajectory; //!< Trajectory related parameters
     
@@ -174,7 +175,11 @@ public:
     bool enable_homotopy_class_planning; //!< Activate homotopy class planning (Requires much more resources that simple planning, since multiple trajectories are optimized at once).
     bool enable_multithreading; //!< Activate multiple threading for planning multiple trajectories in parallel.
     bool simple_exploration; //!< If true, distinctive trajectories are explored using a simple left-right approach (pass each obstacle on the left or right side) for path generation, otherwise sample possible roadmaps randomly in a specified region between start and goal.
+    bool gap_exploration;
+    bool gap_h_signature;
     bool use_gaps;
+    
+    
     int max_number_classes; //!< Specify the maximum number of allowed alternative homotopy classes (limits computational effort)
     double selection_cost_hysteresis; //!< Specify how much trajectory cost must a new candidate have w.r.t. a previously selected trajectory in order to be selected (selection if new_cost < old_cost*factor).
     double selection_prefer_initial_plan; //!< Specify a cost reduction in the interval (0,1) for the trajectory in the equivalence class of the initial plan.
@@ -246,6 +251,7 @@ public:
     trajectory.exact_arc_length = false;
     trajectory.force_reinit_new_goal_dist = 1;
     trajectory.feasibility_check_no_poses = 5;
+    trajectory.egocircle_feasibility = false;
     trajectory.publish_feedback = false;
     
     // Robot
@@ -276,7 +282,7 @@ public:
     obstacles.dynamic_obstacle_inflation_dist = 0.6;
     obstacles.include_dynamic_obstacles = true;
     obstacles.include_costmap_obstacles = true;
-    obstacles.include_egocircle_obstacles = true;
+    obstacles.include_egocircle_obstacles = false;
     obstacles.costmap_obstacles_behind_robot_dist = 1.5;
     obstacles.obstacle_poses_affected = 25;
     obstacles.legacy_obstacle_association = false;
@@ -315,6 +321,7 @@ public:
     optim.weight_dynamic_obstacle_inflation = 0.1;
     optim.weight_viapoint = 1;
     optim.weight_prefer_rotdir = 50;
+    optim.weight_gap = 1;
     
     optim.weight_adapt_factor = 2.0;
     
@@ -323,7 +330,9 @@ public:
     hcp.enable_homotopy_class_planning = true;
     hcp.enable_multithreading = true;
     hcp.simple_exploration = true;
-    hcp.use_gaps = true;
+    hcp.gap_exploration = false;
+    hcp.gap_h_signature = false;
+    hcp.use_gaps = false;
     hcp.max_number_classes = 5; 
     hcp.selection_cost_hysteresis = 1.0;
     hcp.selection_prefer_initial_plan = 0.95;

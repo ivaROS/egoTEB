@@ -197,6 +197,9 @@ double intersects2(egocircle_utils::gap_finding::Gap gap, const VertexPose* pose
   
 void TebOptimalPlanner::AddEdgesGaps()
 {
+  if(cfg_->optim.weight_gap <= 0)
+    return;
+  
   Eigen::Vector2d start_pos = teb_.PoseVertex(0)->pose().position();
   
   //if(gap_markers_.markers.size()==0)
@@ -234,8 +237,7 @@ void TebOptimalPlanner::AddEdgesGaps()
   //const std::vector<egocircle_utils::gap_finding::Gap>& gaps = egocircle_->getDiscontinuityGaps();
   const std::vector<GlobalGap>& gaps = egocircle_->getGlobalGaps();
   
-  //Update with line intersection logic such as from here: http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
-  //Point to line: https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+  //Note: should be able
   for(int j = 0; j < gaps.size(); ++j)
   {
 

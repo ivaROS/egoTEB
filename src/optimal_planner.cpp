@@ -346,8 +346,8 @@ bool TebOptimalPlanner::buildGraph(double weight_multiplier)
     
   AddEdgesPreferRotDir();
   
-  if(cfg_->hcp.use_gaps)
-    AddEdgesGaps();
+  //if(cfg_->hcp.use_gaps)
+  AddEdgesGaps();
   
   ROS_INFO_STREAM_NAMED("timing", "[buildGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
   

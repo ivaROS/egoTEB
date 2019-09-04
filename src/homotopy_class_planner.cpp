@@ -70,14 +70,11 @@ void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obsta
   
   if (cfg_->hcp.simple_exploration)
   {
-    if(cfg_->hcp.use_gaps)
-    {
-      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle_, equivalence_classes_));
-    }
-    else
-    {
-      graph_search_ = boost::shared_ptr<GraphSearchInterface>(new lrKeyPointGraph(*cfg_, this));
-    }
+    graph_search_ = boost::shared_ptr<GraphSearchInterface>(new lrKeyPointGraph(*cfg_, this));
+  }
+  else if(cfg_->hcp.gap_exploration)
+  {
+    graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle_, equivalence_classes_));
   }
   else
   {
@@ -255,20 +252,6 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
   TebOptPlannerContainer::iterator it_teb = tebs_.begin();
   while(it_teb != tebs_.end())
   {
-//     if(cfg_->hcp.use_gaps)
-//     {
-//       if(*it_teb != best_teb_)
-//       {
-//         it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
-//         ROS_DEBUG_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it is not the previous best plan");
-//         continue;
-//       }
-//       else
-//       {
-//         ROS_INFO_STREAM("Keeping candidate in [renewAndAnalyzeOldTebs] since it is the previous best plan");
-//       }
-//     }
-    
     // delete Detours if there is at least one other TEB candidate left in the container
     if (delete_detours && tebs_.size()>1 && it_teb->get()->teb().detectDetoursBackwards(cfg_->hcp.detour_threshold)) //was -0.1
     {
@@ -277,7 +260,7 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
       continue;
     }
     
-    if(cfg_->hcp.use_gaps)
+    if(cfg_->trajectory.egocircle_feasibility)
     {
       bool teb_collides = checkTebValidity(it_teb->get()->teb(), egocircle_);
       if(teb_collides)
@@ -388,7 +371,7 @@ void HomotopyClassPlanner::updateReferenceTrajectoryViaPoints(bool all_trajector
 EquivalenceClassPtr HomotopyClassPlanner::calculateEquivalenceClass(TimedElasticBand& teb)
 {
   EquivalenceClassPtr H;
-  if(cfg_->hcp.use_gaps)
+  if(cfg_->hcp.gap_h_signature)
   {
     H = calculateEquivalenceClass(teb.poses().begin(), teb.poses().end(), egocircle_);
   }

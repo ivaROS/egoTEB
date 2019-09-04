@@ -333,10 +333,8 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   // also consider custom obstacles (must be called after other updates, since the container is not cleared)
   updateObstacleContainerWithCustomObstacles();
   
-  //if(cfg_.obstacles.include_egocircle_obstacles)
-  {
-    updateObstacleContainerWithEgocircle(tf_plan_to_global.stamp_);
-  }
+  updateObstacleContainerWithEgocircle(tf_plan_to_global.stamp_);
+  
     
   // Do not allow config changes during the following optimization step
   boost::mutex::scoped_lock cfg_lock(cfg_.configMutex());
@@ -364,7 +362,7 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
   }
 
   bool feasible=false;
-  if (cfg_.obstacles.include_egocircle_obstacles)
+  if (cfg_.trajectory.egocircle_feasibility)
   {  
     feasible = planner_->isTrajectoryFeasible(footprint_spec_, robot_inscribed_radius_, robot_circumscribed_radius, cfg_.trajectory.feasibility_check_no_poses);
   }
