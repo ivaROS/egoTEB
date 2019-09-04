@@ -136,7 +136,8 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("simple_exploration", hcp.simple_exploration, hcp.simple_exploration); 
   nh.param("gap_exploration", hcp.gap_exploration, hcp.gap_exploration); 
   nh.param("use_gaps", hcp.use_gaps, hcp.use_gaps); 
-  nh.param("max_number_classes", hcp.max_number_classes, hcp.max_number_classes); 
+  nh.param("max_number_classes", hcp.max_number_classes, hcp.max_number_classes);
+  nh.param("feasibility_check_no_tebs", hcp.feasibility_check_no_tebs, hcp.feasibility_check_no_tebs);
   nh.param("selection_obst_cost_scale", hcp.selection_obst_cost_scale, hcp.selection_obst_cost_scale);
   nh.param("selection_prefer_initial_plan", hcp.selection_prefer_initial_plan, hcp.selection_prefer_initial_plan);
   nh.param("selection_viapoint_cost_scale", hcp.selection_viapoint_cost_scale, hcp.selection_viapoint_cost_scale);
@@ -249,6 +250,7 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   // Homotopy Class Planner
   hcp.enable_multithreading = cfg.enable_multithreading;
   hcp.max_number_classes = cfg.max_number_classes; 
+  hcp.feasibility_check_no_tebs = cfg.feasibility_check_no_tebs;
   hcp.selection_cost_hysteresis = cfg.selection_cost_hysteresis;
   hcp.selection_prefer_initial_plan = cfg.selection_prefer_initial_plan;
   hcp.selection_obst_cost_scale = cfg.selection_obst_cost_scale;

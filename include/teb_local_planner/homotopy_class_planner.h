@@ -532,7 +532,7 @@ protected:
   TebOptimalPlannerPtr initial_plan_teb_; //!< Store pointer to the TEB related to the initial plan (use method getInitialPlanTEB() since it checks if initial_plan_teb_ is still included in tebs_.)
 
   TebOptPlannerContainer tebs_; //!< Container that stores multiple local teb planners (for alternative equivalence classes) and their corresponding costs
-
+  TebOptPlannerContainer best_tebs_; //Container for tebs sorted by cost, etc
   EquivalenceClassContainer equivalence_classes_; //!< Store all known quivalence classes (e.g. h-signatures) to allow checking for duplicates after finding and adding new ones.
                                                                             //   The second parameter denotes whether to exclude the class from detour deletion or not (true: force keeping).
   

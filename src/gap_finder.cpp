@@ -46,7 +46,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
      }
   }
   
-  double gap_point_buffer_dist = 0.5;
+  double gap_point_buffer_dist = 0;// 0.5;
   
   std::vector<GlobalGap> gap_points = egocircle_->getGlobalGaps();
     

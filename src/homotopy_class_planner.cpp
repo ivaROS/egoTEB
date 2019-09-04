@@ -40,6 +40,7 @@
 #include <teb_local_planner/gap_finder.h>
 #include <teb_local_planner/teb_validity_checker.h>
 
+#include <queue>
 #include <limits>
 
 namespace teb_local_planner
@@ -637,6 +638,11 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
 
 
     best_teb_.reset(); // reset pointer
+    
+    typedef std::pair<double,TebOptimalPlannerPtr> TebCostPair;
+    
+    std::priority_queue<TebCostPair, std::vector<TebCostPair>, std::greater<TebCostPair> > ordered_list;
+    best_tebs_.clear();
 
     for (TebOptPlannerContainer::iterator it_teb = tebs_.begin(); it_teb != tebs_.end(); ++it_teb)
     {
@@ -651,17 +657,23 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
 
         if (*it_teb == last_best_teb)
             teb_cost = min_cost_last_best; // skip already known cost value of the last best_teb
-        else if (*it_teb == initial_plan_teb)
+        else 
+        {
+          if (*it_teb == initial_plan_teb)
             teb_cost = min_cost_initial_plan_teb;
-        else
+          else
             teb_cost = it_teb->get()->getCurrentCost();
-
+          
+          ordered_list.push(TebCostPair(teb_cost, *it_teb));
+        }
         if (teb_cost < min_cost)
         {
           // check if this candidate is currently not selected
           best_teb_ = *it_teb;
           min_cost = teb_cost;
         }
+        
+        
      }
 
 
@@ -708,7 +720,21 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
         // block switching, so revert best_teb_
         best_teb_ = last_best_teb;
       }
-
+    }
+    
+    if(best_teb_ == last_best_teb)
+    {
+      best_tebs_.push_back(last_best_teb);
+    }
+    else if(last_best_teb)
+    {
+      ordered_list.push(TebCostPair(min_cost_last_best, last_best_teb));
+    }
+    
+    while(!ordered_list.empty())
+    {
+      best_tebs_.push_back(ordered_list.top().second);
+      ordered_list.pop();
     }
 
 
@@ -745,11 +771,27 @@ bool HomotopyClassPlanner::isTrajectoryFeasible(base_local_planner::CostmapModel
 bool HomotopyClassPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Point>& footprint_spec,
                                                 double inscribed_radius, double circumscribed_radius, int look_ahead_idx)
 {
-  TebOptimalPlannerPtr best = bestTeb();
-  if (!best)
+  if(cfg_->hcp.feasibility_check_no_tebs>1)
+  {
+    for(int i = 0; i <std::min(best_tebs_.size(), (size_t)cfg_->hcp.feasibility_check_no_tebs); ++i)
+    {
+      TebOptimalPlannerPtr teb = best_tebs_[i];
+      if(teb->isTrajectoryFeasible(footprint_spec, inscribed_radius, circumscribed_radius, look_ahead_idx))
+        return true;
+      else
+        ROS_WARN_STREAM("[isTrajectoryFeasible] teb #" << i << " not feasible");
+      ++i;
+    }
     return false;
-  
-  return best->isTrajectoryFeasible(footprint_spec, inscribed_radius, circumscribed_radius, look_ahead_idx);
+  }
+  else
+  {
+    TebOptimalPlannerPtr best = bestTeb();
+    if (!best)
+      return false;
+    
+    return best->isTrajectoryFeasible(footprint_spec, inscribed_radius, circumscribed_radius, look_ahead_idx);
+  }
 }
 
 void HomotopyClassPlanner::setPreferredTurningDir(RotType dir)

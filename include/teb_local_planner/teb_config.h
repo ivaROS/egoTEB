@@ -181,6 +181,7 @@ public:
     
     
     int max_number_classes; //!< Specify the maximum number of allowed alternative homotopy classes (limits computational effort)
+    int feasibility_check_no_tebs;
     double selection_cost_hysteresis; //!< Specify how much trajectory cost must a new candidate have w.r.t. a previously selected trajectory in order to be selected (selection if new_cost < old_cost*factor).
     double selection_prefer_initial_plan; //!< Specify a cost reduction in the interval (0,1) for the trajectory in the equivalence class of the initial plan.
     double selection_obst_cost_scale; //!< Extra scaling of obstacle cost terms just for selecting the 'best' candidate.
@@ -334,6 +335,7 @@ public:
     hcp.gap_h_signature = false;
     hcp.use_gaps = false;
     hcp.max_number_classes = 5; 
+    hcp.feasibility_check_no_tebs = 1;
     hcp.selection_cost_hysteresis = 1.0;
     hcp.selection_prefer_initial_plan = 0.95;
     hcp.selection_obst_cost_scale = 100.0;
