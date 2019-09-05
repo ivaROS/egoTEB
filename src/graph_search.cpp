@@ -97,7 +97,14 @@ void GraphSearchInterface::DepthFirst(HcGraph& g, std::vector<HcGraphVertexType>
 void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, double dist_to_obst, double obstacle_heading_threshold, const geometry_msgs::Twist* start_velocity)
 {
   // Clear existing graph and paths
+  ros::WallTime starttime = ros::WallTime::now();
+
   clearGraph();
+
+  ros::WallTime endtime = ros::WallTime::now();
+  ROS_INFO_STREAM("creatGraph, lrk, clearGraph, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
+
 
   // Direction-vector between start and goal and normal-vector:
   Eigen::Vector2d diff = goal.position()-start.position();
@@ -155,6 +162,14 @@ void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, dou
   HcGraphVertexType goal_vtx = boost::add_vertex(graph_); // goal vertex
   graph_[goal_vtx].pos = goal.position();
 
+
+  endtime = ros::WallTime::now();
+  auto num_vertices = boost::num_vertices(graph_);
+  ROS_INFO_STREAM("creatGraph, lrk, numVertex, " << num_vertices << ", " << ros::Time::now());
+
+  ROS_INFO_STREAM("creatGraph, lrk, addVertex, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
+
   // Insert Edges
   HcGraphVertexIterator it_i, end_i, it_j, end_j;
   for (boost::tie(it_i,end_i) = boost::vertices(graph_); it_i!=end_i-1; ++it_i) // ignore goal in this loop
@@ -211,19 +226,35 @@ void lrKeyPointGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, dou
     }
   }
 
+  endtime = ros::WallTime::now();
+  auto num_edges = boost::num_edges(graph_);
+  // ROS_DEBUG_STREAM_NAMED("graph_info", "creatGraph, numEdge, " << num_edges << ", " << ros::Time::now());
+  ROS_INFO_STREAM("creatGraph, lrk, insertEdge, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
 
   // Find all paths between start and goal!
   std::vector<HcGraphVertexType> visited;
   visited.push_back(start_vtx);
   DepthFirst(graph_,visited,goal_vtx, start.theta(), goal.theta(), start_velocity);
+
+  endtime = ros::WallTime::now();
+  ROS_INFO_STREAM("creatGraph, lrk, graphSearch, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+
 }
 
 
 
 void ProbRoadmapGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, double dist_to_obst, double obstacle_heading_threshold, const geometry_msgs::Twist* start_velocity)
 {
+  
+  ros::WallTime starttime = ros::WallTime::now();
+
   // Clear existing graph and paths
   clearGraph();
+
+  ros::WallTime endtime = ros::WallTime::now();
+  ROS_INFO_STREAM("creatGraph, prm, clearGraph, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
 
   // Direction-vector between start and goal and normal-vector:
   Eigen::Vector2d diff = goal.position()-start.position();
@@ -299,6 +330,13 @@ void ProbRoadmapGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, do
   HcGraphVertexType goal_vtx = boost::add_vertex(graph_); // goal vertex
   graph_[goal_vtx].pos = goal.position();
 
+  endtime = ros::WallTime::now();
+  auto num_vertices = boost::num_vertices(graph_);
+  ROS_INFO_STREAM("creatGraph, prm, numVertex, " << num_vertices << ", " << ros::Time::now());
+
+  ROS_INFO_STREAM("creatGraph, prm, addVertex, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
+  
 
   // Insert Edges
   HcGraphVertexIterator it_i, end_i, it_j, end_j;
@@ -335,10 +373,22 @@ void ProbRoadmapGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, do
     }
   }
 
+  endtime = ros::WallTime::now();
+  auto num_edges = boost::num_edges(graph_);
+  ROS_INFO_STREAM("creatGraph, prm, numEdge, " << num_edges << ", " << ros::Time::now());
+  ROS_INFO_STREAM("creatGraph, prm, insertEdge, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
+
+
   /// Find all paths between start and goal!
   std::vector<HcGraphVertexType> visited;
   visited.push_back(start_vtx);
   DepthFirst(graph_,visited,goal_vtx, start.theta(), goal.theta(), start_velocity);
+
+  endtime = ros::WallTime::now();
+  ROS_INFO_STREAM("creatGraph, prm, graphSearch, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+
+  
 }
 
 } // end namespace

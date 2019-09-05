@@ -349,7 +349,7 @@ bool TebOptimalPlanner::buildGraph(double weight_multiplier)
   if(cfg_->hcp.use_gaps)
     AddEdgesGaps();
   
-  ROS_INFO_STREAM_NAMED("timing", "[buildGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
+  // ROS_INFO_STREAM_NAMED("timing", "[buildGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
   
   return true;  
 }
@@ -389,7 +389,7 @@ bool TebOptimalPlanner::optimizeGraph(int no_iterations,bool clear_after)
 
   if (clear_after) clearGraph();	
   
-  ROS_INFO_STREAM_NAMED("timing", "[optimizeGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
+  ROS_INFO_STREAM("optimizeGraph, time, " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms, " << ros::Time::now());
   
   return true;
 }
@@ -1139,7 +1139,7 @@ void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoi
     {
       double gap_cost = edge_gap->getError().squaredNorm();
       cost_ += gap_cost;
-      ROS_INFO_STREAM_NAMED("gap_edges", "Gap cost: " << gap_cost);
+      // ROS_INFO_STREAM_NAMED("gap_edges", "Gap cost: " << gap_cost);
       /*
       GlobalGap gap = edge_gap->measurement();
       
@@ -1152,7 +1152,7 @@ void TebOptimalPlanner::computeCurrentCost(double obst_cost_scale, double viapoi
   if (!graph_exist_flag) 
     clearGraph();
   
-  ROS_INFO_STREAM_NAMED("timing", "[computeCurrentCost] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
+  // ROS_INFO_STREAM_NAMED("timing", "[computeCurrentCost] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
 }
 
 
@@ -1374,7 +1374,7 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Po
           //  return false;
           ego_circle::EgoCircularPoint ec_point(center.x(), center.y());
           float min_dist = egocircle_->getMinDist(ec_point);
-          ROS_INFO_STREAM("Next point too far away; testing another pose [" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
+          // ROS_INFO_STREAM("Next point too far away; testing another pose [" << ec_point.x << "," << ec_point.y << "]: " << min_dist);
           
           
           if(min_dist < inscribed_radius)

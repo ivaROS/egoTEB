@@ -175,7 +175,7 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     validateFootprints(robot_model->getInscribedRadius(), robot_inscribed_radius_, cfg_.obstacles.min_obstacle_dist);
     
     //egocircle_wrapper_->setInflationRadius(robot_model->getInscribedRadius());  //use this if defining footprint_model as something other than 'point'
-    //ROS_INFO_STREAM("opt_inscribed_radius: " << robot_model->getInscribedRadius() << ", costmap inscribed_radius: " << robot_inscribed_radius_ << ", min_obst_dist: " << cfg_.obstacles.min_obstacle_dist);
+    // ROS_INFO_STREAM("opt_inscribed_radius: " << robot_model->getInscribedRadius() << ", costmap inscribed_radius: " << robot_inscribed_radius_ << ", min_obst_dist: " << cfg_.obstacles.min_obstacle_dist);
     
     // setup callback for custom obstacles
     custom_obst_sub_ = nh.subscribe("obstacles", 1, &TebLocalPlannerROS::customObstacleCB, this);
@@ -363,14 +363,22 @@ bool TebLocalPlannerROS::computeVelocityCommands(geometry_msgs::Twist& cmd_vel)
     costmap_2d::calculateMinAndMaxDistances(footprint_spec_, robot_inscribed_radius_, robot_circumscribed_radius);
   }
 
+  ROS_INFO_STREAM("Sanity check");
+
   bool feasible=false;
   if (cfg_.obstacles.include_egocircle_obstacles)
-  {  
+  { 
+    ros::WallTime starttime = ros::WallTime::now();
     feasible = planner_->isTrajectoryFeasible(footprint_spec_, robot_inscribed_radius_, robot_circumscribed_radius, cfg_.trajectory.feasibility_check_no_poses);
+    ros::WallTime endtime = ros::WallTime::now();
+    ROS_INFO_STREAM("trajFeasible, gap, " << cfg_.trajectory.feasibility_check_no_poses << ", " << (endtime - starttime).toSec() * 1e3 << "ms");
   }
   else
   {
+    ros::WallTime starttime = ros::WallTime::now();
     feasible = planner_->isTrajectoryFeasible(costmap_model_.get(), footprint_spec_, robot_inscribed_radius_, robot_circumscribed_radius, cfg_.trajectory.feasibility_check_no_poses);
+    ros::WallTime endtime = ros::WallTime::now();
+    ROS_INFO_STREAM("trajFeasible, costmap, " << cfg_.trajectory.feasibility_check_no_poses << ", " << (endtime - starttime).toSec() * 1e3 << "ms");
   }
   
   if (!feasible)
@@ -1049,7 +1057,7 @@ RobotFootprintModelPtr TebLocalPlannerROS::getRobotFootprintFromParamServer(cons
                        << "/footprint_model/radius' does not exist. Using point-model instead.");
       return boost::make_shared<PointRobotFootprint>();
     }
-    ROS_INFO_STREAM("Footprint model 'circular' (radius: " << radius <<"m) loaded for trajectory optimization.");
+    // ROS_INFO_STREAM("Footprint model 'circular' (radius: " << radius <<"m) loaded for trajectory optimization.");
     return boost::make_shared<CircularRobotFootprint>(radius);
   }
   
@@ -1074,8 +1082,8 @@ RobotFootprintModelPtr TebLocalPlannerROS::getRobotFootprintFromParamServer(cons
       return boost::make_shared<PointRobotFootprint>();
     }
     
-    ROS_INFO_STREAM("Footprint model 'line' (line_start: [" << line_start[0] << "," << line_start[1] <<"]m, line_end: ["
-                     << line_end[0] << "," << line_end[1] << "]m) loaded for trajectory optimization.");
+    // ROS_INFO_STREAM("Footprint model 'line' (line_start: [" << line_start[0] << "," << line_start[1] <<"]m, line_end: ["
+                    //  << line_end[0] << "," << line_end[1] << "]m) loaded for trajectory optimization.");
     return boost::make_shared<LineRobotFootprint>(Eigen::Map<const Eigen::Vector2d>(line_start.data()), Eigen::Map<const Eigen::Vector2d>(line_end.data()));
   }
   
@@ -1095,8 +1103,8 @@ RobotFootprintModelPtr TebLocalPlannerROS::getRobotFootprintFromParamServer(cons
     nh.getParam("footprint_model/front_radius", front_radius);
     nh.getParam("footprint_model/rear_offset", rear_offset);
     nh.getParam("footprint_model/rear_radius", rear_radius);
-    ROS_INFO_STREAM("Footprint model 'two_circles' (front_offset: " << front_offset <<"m, front_radius: " << front_radius 
-                    << "m, rear_offset: " << rear_offset << "m, rear_radius: " << rear_radius << "m) loaded for trajectory optimization.");
+    // ROS_INFO_STREAM("Footprint model 'two_circles' (front_offset: " << front_offset <<"m, front_radius: " << front_radius 
+                    // << "m, rear_offset: " << rear_offset << "m, rear_radius: " << rear_radius << "m) loaded for trajectory optimization.");
     return boost::make_shared<TwoCirclesRobotFootprint>(front_offset, front_radius, rear_offset, rear_radius);
   }
 
@@ -1118,7 +1126,7 @@ RobotFootprintModelPtr TebLocalPlannerROS::getRobotFootprintFromParamServer(cons
       try
       {
         Point2dContainer polygon = makeFootprintFromXMLRPC(footprint_xmlrpc, "/footprint_model/vertices");
-        ROS_INFO_STREAM("Footprint model 'polygon' loaded for trajectory optimization.");
+        // ROS_INFO_STREAM("Footprint model 'polygon' loaded for trajectory optimization.");
         return boost::make_shared<PolygonRobotFootprint>(polygon);
       } 
       catch(const std::exception& ex)
