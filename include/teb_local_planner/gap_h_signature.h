@@ -134,10 +134,9 @@ public:
     void calculateHSignature(BidirIter path_start, BidirIter path_end, const EgoCircleInterface* egocircle)
     {
 
-      ros::WallTime starttime = ros::WallTime::now();
-  
       std::advance(path_end, -1); // reduce path_end by 1 (since we check line segments between those path points
-            
+      
+      
       const auto& gaps = egocircle->getGlobalGaps();
       const int num_gaps = gaps.size();
       
@@ -162,11 +161,7 @@ public:
         ++path_start;
       }
       gap_number_ = -1;
-
-
-      ros::WallTime endtime = ros::WallTime::now();
-      // ROS_INFO_STREAM("Trajectory does not appear to pass through any gap, so giving it index #" << gap_number_);
-      ROS_INFO_STREAM("calculateHSignature, gap, time, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+      ROS_INFO_STREAM("Trajectory does not appear to pass through any gap, so giving it index #" << gap_number_);
     }
 
 

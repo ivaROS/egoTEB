@@ -71,17 +71,14 @@ void HomotopyClassPlanner::initialize(const TebConfig& cfg, ObstContainer* obsta
   
   if (cfg_->hcp.simple_exploration)
   {
-    ROS_WARN("lrk graph chosen in polymorphism");
     graph_search_ = boost::shared_ptr<GraphSearchInterface>(new lrKeyPointGraph(*cfg_, this));
   }
   else if(cfg_->hcp.gap_exploration)
   {
     graph_search_ = boost::shared_ptr<GraphSearchInterface>(new GapFinderGraph(*cfg_, this, egocircle_, equivalence_classes_));
-    ROS_WARN("Gap graph chosen in polymorphism");
   }
   else
   {
-    ROS_WARN("PRM graph chosen in polymorphism");
     graph_search_ = boost::shared_ptr<GraphSearchInterface>(new ProbRoadmapGraph(*cfg_, this));
   }
 
