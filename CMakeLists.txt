@@ -213,7 +213,7 @@ target_link_libraries(teb_local_planner
    ${catkin_LIBRARIES}
 )
 
-#target_compile_options(teb_local_planner PRIVATE -Q -ftime-report)
+target_compile_options(teb_local_planner PRIVATE -Wall)
 
 
 ## Build additional executables

@@ -64,7 +64,7 @@ void TebVisualization::initialize(ros::NodeHandle& nh, const TebConfig& cfg)
   global_plan_pub_ = nh.advertise<nav_msgs::Path>("global_plan", 1);
   local_plan_pub_ = nh.advertise<nav_msgs::Path>("local_plan",1);
   teb_poses_pub_ = nh.advertise<geometry_msgs::PoseArray>("teb_poses", 100);
-  teb_marker_pub_ = nh.advertise<visualization_msgs::Marker>("teb_markers", 1000);
+  teb_marker_pub_ = nh.advertise<visualization_msgs::MarkerArray>("teb_markers", 1000);
   feedback_pub_ = nh.advertise<teb_local_planner::FeedbackMsg>("teb_feedback", 10);  
   
   initialized_ = true; 
@@ -124,23 +124,25 @@ void TebVisualization::publishRobotFootprintModel(const PoseSE2& current_pose, c
   if ( printErrorWhenNotInitialized() )
     return;
   
-  std::vector<visualization_msgs::Marker> markers;
-  robot_model.visualizeRobot(current_pose, markers);
-  if (markers.empty())
+  //std::vector<visualization_msgs::Marker> markers;
+  visualization_msgs::MarkerArray markers;
+  robot_model.visualizeRobot(current_pose, markers.markers);
+  if (markers.markers.empty())
     return;
   
   int idx = 0;
-  for (std::vector<visualization_msgs::Marker>::iterator marker_it = markers.begin(); marker_it != markers.end(); ++marker_it, ++idx)
+  for (std::vector<visualization_msgs::Marker>::iterator marker_it = markers.markers.begin(); marker_it != markers.markers.end(); ++marker_it, ++idx)
   {
     marker_it->header.frame_id = cfg_->map_frame;
     marker_it->header.stamp = ros::Time::now();
     marker_it->action = visualization_msgs::Marker::ADD;
     marker_it->ns = ns;
     marker_it->id = idx;
-    marker_it->lifetime = ros::Duration(2.0);
-    teb_marker_pub_.publish(*marker_it);
+    //marker_it->lifetime = ros::Duration(2.0);
+    //teb_marker_pub_.publish(*marker_it);
   }
   
+  teb_marker_pub_.publish(markers);
 }
 
 
@@ -148,6 +150,8 @@ void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
 {
   if ( obstacles.empty() || printErrorWhenNotInitialized() )
     return;
+  
+  visualization_msgs::MarkerArray marker_array;
   
   // Visualize point obstacles
   {
@@ -158,7 +162,7 @@ void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
     marker.id = 0;
     marker.type = visualization_msgs::Marker::POINTS;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.lifetime = ros::Duration(2.0);
+    //marker.lifetime = ros::Duration(2.0);
     
     for (ObstContainer::const_iterator obst = obstacles.begin(); obst != obstacles.end(); ++obst)
     {
@@ -201,26 +205,34 @@ void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
     marker.color.g = 0.0;
     marker.color.b = 0.0;
 
-    teb_marker_pub_.publish( marker );
+    marker_array.markers.push_back(marker);
+    //teb_marker_pub_.publish( marker );
   }
   
   // Visualize line obstacles
   {
-    std::size_t idx = 0;
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = cfg_->map_frame;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "LineObstacles";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::LINE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    //marker.lifetime = ros::Duration(2.0);
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    
     for (ObstContainer::const_iterator obst = obstacles.begin(); obst != obstacles.end(); ++obst)
     {	
       boost::shared_ptr<LineObstacle> pobst = boost::dynamic_pointer_cast<LineObstacle>(*obst);   
       if (!pobst)
         continue;
       
-      visualization_msgs::Marker marker;
-      marker.header.frame_id = cfg_->map_frame;
-      marker.header.stamp = ros::Time::now();
-      marker.ns = "LineObstacles";
-      marker.id = idx++;
-      marker.type = visualization_msgs::Marker::LINE_STRIP;
-      marker.action = visualization_msgs::Marker::ADD;
-      marker.lifetime = ros::Duration(2.0);
+      
       geometry_msgs::Point start;
       start.x = pobst->start().x();
       start.y = pobst->start().y();
@@ -232,42 +244,47 @@ void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
       end.z = 0;
       marker.points.push_back(end);
   
-      marker.scale.x = 0.1;
-      marker.scale.y = 0.1;
-      marker.color.a = 1.0;
-      marker.color.r = 0.0;
-      marker.color.g = 1.0;
-      marker.color.b = 0.0;
-      
-      teb_marker_pub_.publish( marker );     
+      //teb_marker_pub_.publish( marker );     
     }
+    marker_array.markers.push_back(marker);
   }
   
 
   // Visualize polygon obstacles
   {
-    std::size_t idx = 0;
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = cfg_->map_frame;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "PolyObstacles";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::LINE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    //marker.lifetime = ros::Duration(2.0);
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    
     for (ObstContainer::const_iterator obst = obstacles.begin(); obst != obstacles.end(); ++obst)
     {	
       boost::shared_ptr<PolygonObstacle> pobst = boost::dynamic_pointer_cast<PolygonObstacle>(*obst);   
       if (!pobst)
 				continue;
       
-      visualization_msgs::Marker marker;
-      marker.header.frame_id = cfg_->map_frame;
-      marker.header.stamp = ros::Time::now();
-      marker.ns = "PolyObstacles";
-      marker.id = idx++;
-      marker.type = visualization_msgs::Marker::LINE_STRIP;
-      marker.action = visualization_msgs::Marker::ADD;
-      marker.lifetime = ros::Duration(2.0);
-      
+      int idx = 0;
       for (Point2dContainer::const_iterator vertex = pobst->vertices().begin(); vertex != pobst->vertices().end(); ++vertex)
       {
         geometry_msgs::Point point;
         point.x = vertex->x();
         point.y = vertex->y();
         point.z = 0;
+        
+        if(idx>1)
+        {
+          marker.points.push_back(marker.points.back());
+        }
         marker.points.push_back(point);
       }
       
@@ -275,22 +292,20 @@ void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
       // but only if polygon has more than 2 points (it is not a line)
       if (pobst->vertices().size() > 2)
       {
+        marker.points.push_back(marker.points.back());
         geometry_msgs::Point point;
         point.x = pobst->vertices().front().x();
         point.y = pobst->vertices().front().y();
         point.z = 0;
         marker.points.push_back(point);
       }
-      marker.scale.x = 0.1;
-      marker.scale.y = 0.1;
-      marker.color.a = 1.0;
-      marker.color.r = 1.0;
-      marker.color.g = 0.0;
-      marker.color.b = 0.0;
-      
-      teb_marker_pub_.publish( marker );     
+      //teb_marker_pub_.publish( marker );     
     }
+
+    marker_array.markers.push_back(marker);
   }
+  
+  teb_marker_pub_.publish(marker_array);
 }
 
 
@@ -306,7 +321,7 @@ void TebVisualization::publishViaPoints(const std::vector< Eigen::Vector2d, Eige
   marker.id = 0;
   marker.type = visualization_msgs::Marker::POINTS;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.lifetime = ros::Duration(2.0);
+  //marker.lifetime = ros::Duration(2.0);
   
   for (std::size_t i=0; i < via_points.size(); ++i)
   {
@@ -324,7 +339,9 @@ void TebVisualization::publishViaPoints(const std::vector< Eigen::Vector2d, Eige
   marker.color.g = 0.0;
   marker.color.b = 1.0;
 
-  teb_marker_pub_.publish( marker );
+  visualization_msgs::MarkerArray markers;
+  markers.markers.push_back(marker);
+  teb_marker_pub_.publish( markers );
 }
 
 void TebVisualization::publishTebContainer(const TebOptPlannerContainer& teb_planner, const std::string& ns)
@@ -377,7 +394,9 @@ if ( printErrorWhenNotInitialized() )
   marker.color.g = 1.0;
   marker.color.b = 0.0;
 
-  teb_marker_pub_.publish( marker );
+  visualization_msgs::MarkerArray markers;
+  markers.markers.push_back(marker);
+  teb_marker_pub_.publish( markers );
 }
 
 void TebVisualization::publishFeedbackMessage(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planners,
