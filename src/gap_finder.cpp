@@ -12,17 +12,23 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   }
   
   // Clear existing graph and paths
+
+  ros::WallTime starttime = ros::WallTime::now();
   clearGraph();
+
+  ros::WallTime endtime = ros::WallTime::now();
+  ROS_INFO_STREAM("creatGraph, gap, clearGraph, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
 
   // Direction-vector between start and goal and normal-vector:
   Eigen::Vector2d diff = goal.position()-start.position();
   
   if (diff.norm()<cfg_->goal_tolerance.xy_goal_tolerance)
   {
-    ROS_DEBUG("HomotopyClassPlanner::createProbRoadmapGraph(): xy-goal-tolerance already reached.");
+    // ROS_DEBUG("HomotopyClassPlanner::createProbRoadmapGraph(): xy-goal-tolerance already reached.");
     if (hcp_->getTrajectoryContainer().empty())
     {
-      ROS_INFO("HomotopyClassPlanner::createProbRoadmapGraph(): Initializing a small straight line to just correct orientation errors.");
+      // ROS_INFO("HomotopyClassPlanner::createProbRoadmapGraph(): Initializing a small straight line to just correct orientation errors.");
       hcp_->addAndInitNewTeb(start, goal, start_velocity);
     }
     return;
@@ -38,11 +44,11 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
      {
         int gap_num= sig->getGap();
         utilized_gaps.push_back(gap_num);
-        ROS_INFO_STREAM("Added Gap #" << gap_num << " to the 'ignore' list for graph creation");
+        // ROS_INFO_STREAM("Added Gap #" << gap_num << " to the 'ignore' list for graph creation");
      }
      else
      {
-       ROS_WARN_STREAM("Signature type is not GapHSignature, cannot prune gaps in graph");
+      //  ROS_WARN_STREAM("Signature type is not GapHSignature, cannot prune gaps in graph");
      }
   }
   
@@ -50,7 +56,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   
   std::vector<GlobalGap> gap_points = egocircle_->getGlobalGaps();
     
-  ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
+  // ROS_INFO_STREAM("Got " << gap_points.size() << " gaps.");
   
   ROS_INFO_STREAM_NAMED("gap_finder", "diff: [" << diff.x() << "," << diff.y() << "], obstacle_heading_threshold: " << obstacle_heading_threshold);
   
@@ -107,8 +113,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
         ROS_INFO_STREAM("Best point so far: [" << best_gap_point(0) << "," << best_gap_point(1) << "]");
       }
     }
-    ROS_INFO_STREAM("Gap #" << i << ": [" << best_gap_point(0) << "," << best_gap_point(1) << "]"); 
-    
+    ROS_INFO_STREAM("Gap #" << i << ": [" << best_gap_point(0) << "," << best_gap_point(1) << "]");     
     // A gap vertex must be reachable from the start, so only add if it is in the right general direction
   
     if(best_dot_p<=obstacle_heading_threshold)
@@ -130,9 +135,15 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   HcGraphVertexType goal_vtx = boost::add_vertex(graph_); // goal vertex
   graph_[goal_vtx].pos = goal.position();
 
-  auto num_vertices = boost::num_vertices(graph_);
   
-  ROS_INFO_STREAM("Added (" << num_vertices << ") vertices to graph.");
+  // ROS_INFO_STREAM("Added (" << num_vertices << ") vertices to graph.");
+
+  endtime = ros::WallTime::now();
+  auto num_vertices = boost::num_vertices(graph_);
+  ROS_INFO_STREAM("creatGraph, gap, numVertex, " << num_vertices << ", " << ros::Time::now());
+
+  ROS_INFO_STREAM("creatGraph, gap, addVertex, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
   
   // Insert Edges
   HcGraphVertexIterator it_i, end_i;
@@ -176,17 +187,25 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
     }
   }
   
+  
+  // ROS_INFO_STREAM("Added (" << num_edges << ") edges to graph.");
+
+  endtime = ros::WallTime::now();
   auto num_edges = boost::num_edges(graph_);
-  
-  ROS_INFO_STREAM("Added (" << num_edges << ") edges to graph.");
-  
+  ROS_INFO_STREAM("creatGraph, gap, numEdge, " << num_edges << ", " << ros::Time::now());
+  ROS_INFO_STREAM("creatGraph, gap, insertEdge, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+  starttime = ros::WallTime::now();
 
   /// Find all paths between start and goal!
   std::vector<HcGraphVertexType> visited;
   visited.push_back(start_vtx);
   //DepthFirstNI(graph_,visited,goal_vtx, start.theta(), goal.theta(), start_velocity);
   DepthFirst(graph_,visited,goal_vtx, start.theta(), goal.theta(), start_velocity);
-  ROS_INFO_STREAM("Finished depth first search.");
+
+  endtime = ros::WallTime::now();
+  ROS_INFO_STREAM("creatGraph, gap, graphSearch, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
+
+  // ROS_INFO_STREAM("Finished depth first search.");
   
 }
 

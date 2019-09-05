@@ -354,7 +354,7 @@ namespace teb_local_planner
       tebs_.push_back(candidate);
       return tebs_.back();
     }
-    ROS_INFO_STREAM("Did not add new TEB! [iterators]");
+    // ROS_INFO_STREAM("Did not add new TEB! [iterators]");
 
     // If the candidate constitutes no new equivalence class, return a null pointer
     return TebOptimalPlannerPtr();
@@ -381,7 +381,7 @@ namespace teb_local_planner
       if ( *it == goal ) // goal reached
       {
         visited.push_back(*it);
-        ROS_INFO_STREAM_NAMED("graph_search", "Found path to goal through graph!");
+        // ROS_INFO_STREAM_NAMED("graph_search", "Found path to goal through graph!");
         // Add new TEB, if this path belongs to a new homotopy class
         //std::vector<geometry_msgs::PoseStamped> plan = InterpolateGraph(g, visited, start_orientation, goal_orientation, .1);
         //hcp_->addAndInitNewTeb(plan, start_velocity);

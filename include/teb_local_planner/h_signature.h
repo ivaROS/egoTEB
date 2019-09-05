@@ -102,6 +102,7 @@ public:
             return;
         }
 
+        ros::WallTime starttime = ros::WallTime::now();
 
         ROS_ASSERT_MSG(cfg_->hcp.h_signature_prescaler>0.1 && cfg_->hcp.h_signature_prescaler<=1, "Only a prescaler on the interval (0.1,1] ist allowed.");
 
@@ -185,6 +186,9 @@ public:
             }
             ++path_start;
         }
+
+        ros::WallTime endtime = ros::WallTime::now();
+        ROS_INFO_STREAM("calculateHSignature, og, time, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
     }
 
 
@@ -282,6 +286,7 @@ public:
     void calculateHSignature(BidirIter path_start, BidirIter path_end, Fun fun_cplx_point, const ObstContainer* obstacles,
                              boost::optional<TimeDiffSequence::iterator> timediff_start, boost::optional<TimeDiffSequence::iterator> timediff_end)
     {
+      ros::WallTime starttime = ros::WallTime::now();
       hsignature3d_.resize(obstacles->size());
 
       std::advance(path_end, -1); // reduce path_end by 1 (since we check line segments between those path points
@@ -343,6 +348,9 @@ public:
         // normalize to 1
         hsignature3d_.at(l) = H/(4*M_PI);
       }
+
+      ros::WallTime endtime = ros::WallTime::now();
+      ROS_INFO_STREAM("calculateHSignature, og, time, " <<  (endtime - starttime).toSec() * 1e3 << "ms, " << ros::Time::now());
     }
 
     /**
