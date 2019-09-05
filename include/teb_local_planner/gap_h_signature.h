@@ -190,7 +190,7 @@ public:
     */
     virtual bool isValid() const
     {
-        true;
+        return true;
     }
 
     /**

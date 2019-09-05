@@ -706,6 +706,8 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
 //       }
 //   }
 
+    ROS_WARN_STREAM("ordered_list contains " << ordered_list.size() << " tebs");
+
     // check if we are allowed to change
     if (last_best_teb && best_teb_ != last_best_teb)
     {
@@ -722,13 +724,16 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
       }
     }
     
-    if(best_teb_ == last_best_teb)
+    if(last_best_teb)
     {
-      best_tebs_.push_back(last_best_teb);
-    }
-    else if(last_best_teb)
-    {
-      ordered_list.push(TebCostPair(min_cost_last_best, last_best_teb));
+      if(best_teb_ == last_best_teb)
+      {
+        best_tebs_.push_back(last_best_teb);
+      }
+      else 
+      {
+        ordered_list.push(TebCostPair(min_cost_last_best, last_best_teb));
+      }
     }
     
     while(!ordered_list.empty())

@@ -53,126 +53,135 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
   typedef typename boost::graph_traits<GraphType>::vertex_iterator GraphVertexIterator;
   typedef typename boost::graph_traits<GraphType>::edge_iterator GraphEdgeIterator;
 
-  // Visualize Edges
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = cfg_->map_frame;
-  marker.header.stamp = ros::Time::now();
-  marker.ns = ns_prefix + "Edges";
-  marker.id = 0;
-// #define TRIANGLE
-#ifdef TRIANGLE
-  marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
-#else
-  marker.type = visualization_msgs::Marker::LINE_LIST;
-#endif
-  marker.action = visualization_msgs::Marker::ADD;
-  
-  GraphEdgeIterator it_edge, end_edges;
-  for (boost::tie(it_edge,end_edges) = boost::edges(graph); it_edge!=end_edges; ++it_edge)
+  visualization_msgs::MarkerArray markers;
   {
-#ifdef TRIANGLE
-    geometry_msgs::Point point_start1;
-    point_start1.x = graph[boost::source(*it_edge,graph)].pos[0]+0.05;
-    point_start1.y = graph[boost::source(*it_edge,graph)].pos[1]-0.05;
-    point_start1.z = 0;
-    marker.points.push_back(point_start1);
-    geometry_msgs::Point point_start2;
-    point_start2.x = graph[boost::source(*it_edge,graph)].pos[0]-0.05;
-    point_start2.y = graph[boost::source(*it_edge,graph)].pos[1]+0.05;
-    point_start2.z = 0;
-    marker.points.push_back(point_start2);
-
-#else
-    geometry_msgs::Point point_start;
-    point_start.x = graph[boost::source(*it_edge,graph)].pos[0];
-    point_start.y = graph[boost::source(*it_edge,graph)].pos[1];
-    point_start.z = 0;
-    marker.points.push_back(point_start);
-#endif
-    geometry_msgs::Point point_end;
-    point_end.x = graph[boost::target(*it_edge,graph)].pos[0];
-    point_end.y = graph[boost::target(*it_edge,graph)].pos[1];
-    point_end.z = 0;
-    marker.points.push_back(point_end);
+    // Visualize Edges
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = cfg_->map_frame;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = ns_prefix + "Edges";
+    marker.id = 0;
+  // #define TRIANGLE
+  #ifdef TRIANGLE
+    marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
+  #else
+    marker.type = visualization_msgs::Marker::LINE_LIST;
+  #endif
+    marker.action = visualization_msgs::Marker::ADD;
     
-    // add color
-    std_msgs::ColorRGBA color;
-    color.a = 1.0;
-    color.r = 0;
-    color.g = 0;
-    color.b = 1;
-    marker.colors.push_back(color);
-    marker.colors.push_back(color);
-#ifdef TRIANGLE
-    marker.colors.push_back(color);
-#endif
-  }
-  
-#ifdef TRIANGLE
-  marker.scale.x = 1;
-  marker.scale.y = 1;
-  marker.scale.z = 1;
-#else 
-  marker.scale.x = 0.01;
-#endif
-  marker.color.a = 1.0;
-  marker.color.r = 0.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0;
+    GraphEdgeIterator it_edge, end_edges;
+    for (boost::tie(it_edge,end_edges) = boost::edges(graph); it_edge!=end_edges; ++it_edge)
+    {
+  #ifdef TRIANGLE
+      geometry_msgs::Point point_start1;
+      point_start1.x = graph[boost::source(*it_edge,graph)].pos[0]+0.05;
+      point_start1.y = graph[boost::source(*it_edge,graph)].pos[1]-0.05;
+      point_start1.z = 0;
+      marker.points.push_back(point_start1);
+      geometry_msgs::Point point_start2;
+      point_start2.x = graph[boost::source(*it_edge,graph)].pos[0]-0.05;
+      point_start2.y = graph[boost::source(*it_edge,graph)].pos[1]+0.05;
+      point_start2.z = 0;
+      marker.points.push_back(point_start2);
 
-  // Now publish edge markers
-  teb_marker_pub_.publish( marker );
-  
-  // Visualize vertices
-  marker.header.frame_id = cfg_->map_frame;
-  marker.header.stamp = ros::Time::now();
-  marker.ns = ns_prefix + "Vertices";
-  marker.id = 0;
-  marker.type = visualization_msgs::Marker::POINTS;
-  marker.action = visualization_msgs::Marker::ADD;
-  
-  GraphVertexIterator it_vert, end_vert;
-  for (boost::tie(it_vert,end_vert) = boost::vertices(graph); it_vert!=end_vert; ++it_vert)
-  {
-    geometry_msgs::Point point;
-    point.x = graph[*it_vert].pos[0];
-    point.y = graph[*it_vert].pos[1];
-    point.z = 0;
-    marker.points.push_back(point);
-    // add color
-    
-    std_msgs::ColorRGBA color;
-    color.a = 1.0;
-    if (it_vert==end_vert-1)
-    {
-      color.r = 1;
-      color.g = 0;
-      color.b = 0;		
-    }
-    else
-    {
+  #else
+      geometry_msgs::Point point_start;
+      point_start.x = graph[boost::source(*it_edge,graph)].pos[0];
+      point_start.y = graph[boost::source(*it_edge,graph)].pos[1];
+      point_start.z = 0;
+      marker.points.push_back(point_start);
+  #endif
+      geometry_msgs::Point point_end;
+      point_end.x = graph[boost::target(*it_edge,graph)].pos[0];
+      point_end.y = graph[boost::target(*it_edge,graph)].pos[1];
+      point_end.z = 0;
+      marker.points.push_back(point_end);
+      
+      // add color
+      std_msgs::ColorRGBA color;
+      color.a = 1.0;
       color.r = 0;
-      color.g = 1;
-      color.b = 0;
+      color.g = 0;
+      color.b = 1;
+      marker.colors.push_back(color);
+      marker.colors.push_back(color);
+  #ifdef TRIANGLE
+      marker.colors.push_back(color);
+  #endif
     }
-    marker.colors.push_back(color);
-  }
-  // set first color (start vertix) to blue
-  if (!marker.colors.empty())
-  {
-    marker.colors.front().b = 1;
-    marker.colors.front().g = 0;
+    
+  #ifdef TRIANGLE
+    marker.scale.x = 1;
+    marker.scale.y = 1;
+    marker.scale.z = 1;
+  #else 
+    marker.scale.x = 0.01;
+  #endif
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+
+    // Now publish edge markers
+    //teb_marker_pub_.publish( marker );
+    markers.markers.push_back(marker);
   }
   
-  marker.scale.x = 0.1;
-  marker.scale.y = 0.1;
-  marker.color.a = 1.0;
-  marker.color.r = 0.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0;
+  {
+    // Visualize vertices
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = cfg_->map_frame;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = ns_prefix + "Vertices";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::POINTS;
+    marker.action = visualization_msgs::Marker::ADD;
+    
+    GraphVertexIterator it_vert, end_vert;
+    for (boost::tie(it_vert,end_vert) = boost::vertices(graph); it_vert!=end_vert; ++it_vert)
+    {
+      geometry_msgs::Point point;
+      point.x = graph[*it_vert].pos[0];
+      point.y = graph[*it_vert].pos[1];
+      point.z = 0;
+      marker.points.push_back(point);
+      // add color
+      
+      std_msgs::ColorRGBA color;
+      color.a = 1.0;
+      if (it_vert==end_vert-1)
+      {
+        color.r = 1;
+        color.g = 0;
+        color.b = 0;		
+      }
+      else
+      {
+        color.r = 0;
+        color.g = 1;
+        color.b = 0;
+      }
+      marker.colors.push_back(color);
+    }
+    // set first color (start vertix) to blue
+    if (!marker.colors.empty())
+    {
+      marker.colors.front().b = 1;
+      marker.colors.front().g = 0;
+    }
+    
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
 
+    markers.markers.push_back(marker);
+  }
+  
   // Now publish vertex markers
-  teb_marker_pub_.publish( marker );
+  teb_marker_pub_.publish( markers );
 }
   
 template <typename BidirIter>
