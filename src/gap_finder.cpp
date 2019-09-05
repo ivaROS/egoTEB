@@ -80,14 +80,26 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
       midpoint(0)=(gap_p.x+gap_p2.x)/2;
       midpoint(1)=(gap_p.y+gap_p2.y)/2;
       
+      Eigen::Vector2d gap_v = Eigen::Vector2d(gap_p.x, gap_p.y)-midpoint;
+      Eigen::Vector2d gap_n;
+      gap_n.x() = -gap_v.y();
+      gap_n.y() = gap_v.x();
+      
+      Eigen::Vector2d goal_midpoint_v = goal.position() - midpoint;
+      gap_n.normalize();
+      goal_midpoint_v.normalize();
+      
+      double gap_angle_dot_p = goal_midpoint_v.dot(gap_n);
+      
+      
       Eigen::Vector2d distgap = midpoint-start.position();
       distgap.normalize();
       
       double dot_p = distgap.dot(diff);
       
-      ROS_INFO_STREAM("Gap #" << i << ", segment #" << segment << ": midpoint(" << midpoint.x() << "," << midpoint.y() << "), dot_p: " << dot_p << ", best_dot_p: " << best_dot_p);
+      ROS_INFO_STREAM("Gap #" << i << ", segment #" << segment << ": midpoint(" << midpoint.x() << "," << midpoint.y() << "), dot_p: " << dot_p << ", best_dot_p: " << best_dot_p << ", gap_v(" << gap_v.x() << "," << gap_v.y() << ", gap_n(" << gap_n.x() << "," << gap_n.y() << "), goal_mid_v(" << goal_midpoint_v.x() << "," << goal_midpoint_v.y() << "), gap_angle_dot_p:" << gap_angle_dot_p);
       // Check if the direction is backwards:
-      if (dot_p > best_dot_p)
+      if (gap_angle_dot_p > 0 && dot_p > best_dot_p)
       {
         best_dot_p = dot_p;
         best_gap_point = midpoint + distgap*gap_point_buffer_dist;
