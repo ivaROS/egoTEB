@@ -30,6 +30,9 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
 
   diff.normalize();
   
+  HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
+  graph_[start_vtx].pos = start.position();
+  
   std::vector<int> utilized_gaps;
   for(auto eq : equivalency_classes_)
   {
@@ -97,14 +100,14 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
       
       double dot_p = distgap.dot(diff);
       
-      ROS_INFO_STREAM("Gap #" << i << ", segment #" << segment << ": midpoint(" << midpoint.x() << "," << midpoint.y() << "), dot_p: " << dot_p << ", best_dot_p: " << best_dot_p << ", gap_v(" << gap_v.x() << "," << gap_v.y() << ", gap_n(" << gap_n.x() << "," << gap_n.y() << "), goal_mid_v(" << goal_midpoint_v.x() << "," << goal_midpoint_v.y() << "), gap_angle_dot_p:" << gap_angle_dot_p);
+      ROS_DEBUG_STREAM("Gap #" << i << ", segment #" << segment << ": midpoint(" << midpoint.x() << "," << midpoint.y() << "), dot_p: " << dot_p << ", best_dot_p: " << best_dot_p << ", gap_v(" << gap_v.x() << "," << gap_v.y() << ", gap_n(" << gap_n.x() << "," << gap_n.y() << "), goal_mid_v(" << goal_midpoint_v.x() << "," << goal_midpoint_v.y() << "), gap_angle_dot_p:" << gap_angle_dot_p);
       // Check if the direction is backwards:
       if (gap_angle_dot_p > 0 && dot_p > best_dot_p)
       {
         best_dot_p = dot_p;
         best_gap_point = midpoint + distgap*gap_point_buffer_dist;
         
-        ROS_INFO_STREAM("Best point so far: [" << best_gap_point(0) << "," << best_gap_point(1) << "]");
+        ROS_DEBUG_STREAM("Best point so far: [" << best_gap_point(0) << "," << best_gap_point(1) << "]");
       }
     }
     ROS_INFO_STREAM("Gap #" << i << ": [" << best_gap_point(0) << "," << best_gap_point(1) << "]"); 
@@ -123,8 +126,6 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
     }
   }
 
-  HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
-  graph_[start_vtx].pos = start.position();
   
   // Now add goal vertex
   HcGraphVertexType goal_vtx = boost::add_vertex(graph_); // goal vertex

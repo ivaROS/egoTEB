@@ -85,7 +85,7 @@ namespace teb_local_planner
  * @see TebOptimalPlanner::AddEdgesObstacles, TebOptimalPlanner::EdgeObstacle
  * @remarks Do not forget to call setTebConfig() and setObstacle()
  */     
-class EdgeGap : public BaseTebUnaryEdge<1, GlobalGap, VertexPose>
+class EdgeGap : public BaseTebUnaryEdge<1, Eigen::Vector2d, VertexPose>
 {
   
 public:
@@ -150,7 +150,7 @@ public:
    * @param robot_model Robot model required for distance calculation
    * @param obstacle 2D position vector containing the position of the obstacle
    */ 
-  void setParameters(const TebConfig& cfg, GlobalGap gap, const Eigen::Vector2d initial_pos);
+  void setParameters(const TebConfig& cfg, const Eigen::Vector2d& gap_start, const Eigen::Vector2d& gap_end);
 //   {
 //     cfg_ = &cfg;
 //     
@@ -160,7 +160,8 @@ public:
   
 //protected:
 public:
-  Eigen::Vector2d initial_pos_, left_bnv_, right_bnv_;
+  Eigen::Vector2d initial_pos_, left_bnv_, right_bnv_, gap_start_, gap_end_, gap_center_;
+  double gap_radius_;
   
 public:         
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

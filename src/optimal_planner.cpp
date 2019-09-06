@@ -1464,4 +1464,10 @@ bool TebOptimalPlanner::isHorizonReductionAppropriate(const std::vector<geometry
   return false;
 }
 
+const visualization_msgs::MarkerArray* TebOptimalPlanner::getEdgeGapMarkers()
+{
+  return &gap_markers_;
+}
+
+
 } // namespace teb_local_planner

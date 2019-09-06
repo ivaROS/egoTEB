@@ -181,7 +181,7 @@ public:
       else
         ROS_ERROR("Cannot compare GapHSignature equivalence classes with types other than GapHSignature.");
       
-        //return false;
+        return false;
     }
 
    /**

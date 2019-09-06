@@ -53,6 +53,7 @@
 // boost
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
+#include <boost/thread/mutex.hpp>
 
 // std
 #include <iterator>
@@ -72,6 +73,7 @@ namespace teb_local_planner
 {
   
 class TebOptimalPlanner; //!< Forward Declaration 
+//class EdgeGap;
 
   
 /**
@@ -221,8 +223,9 @@ public:
    */
   void publishFeedbackMessage(const TebOptimalPlanner& teb_planner, const ObstContainer& obstacles);
   
-  void addGapEdge(const Eigen::Vector2d& gap_l, const Eigen::Vector2d& gap_r, const Eigen::Vector2d& pose);
+  //void addGapEdge(const EdgeGap* edge, const Eigen::Vector2d* pose=nullptr);
   
+  void publishGapEdges(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planner, const std::string& ns = "GapEdges");
   //@}
   
 protected:
@@ -241,8 +244,9 @@ protected:
   
   const TebConfig* cfg_; //!< Config class that stores and manages all related parameters
   
+  visualization_msgs::MarkerArray gap_edges_markers_;
   bool initialized_; //!< Keeps track about the correct initialization of this class
-
+  boost::mutex gap_edges_mutex_;
     
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW    

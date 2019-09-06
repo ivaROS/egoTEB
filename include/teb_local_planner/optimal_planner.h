@@ -527,6 +527,7 @@ public:
    */
   virtual bool isHorizonReductionAppropriate(const std::vector<geometry_msgs::PoseStamped>& initial_plan) const;
   
+  const visualization_msgs::MarkerArray* getEdgeGapMarkers();
   //@}
   
 protected:

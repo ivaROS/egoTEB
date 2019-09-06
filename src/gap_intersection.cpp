@@ -3,7 +3,7 @@
 
 namespace teb_local_planner
 {
-    bool intersects(const GlobalGap& gap, const VertexPose* pose1, const VertexPose* pose2, Eigen::Vector2d* intersection)
+  bool intersects(const GlobalGap& gap, const VertexPose* pose1, const VertexPose* pose2, Eigen::Vector2d* intersection, Eigen::Vector2d* gap_start, Eigen::Vector2d* gap_end)
     {
       Eigen::Vector2d p1 = pose1->pose().position();
       Eigen::Vector2d p2 = pose2->pose().position();
@@ -19,6 +19,10 @@ namespace teb_local_planner
         
         if(intersects(p1, p2, p3, p4, intersection))
         {
+          if(gap_start)
+            *gap_start=p3;
+          if(gap_end)
+            *gap_end=p4;
           return true;
         }
       }

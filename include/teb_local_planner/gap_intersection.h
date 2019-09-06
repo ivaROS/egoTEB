@@ -14,7 +14,7 @@
 
 namespace teb_local_planner
 {
-  bool intersects(const GlobalGap& gap, const VertexPose* pose1, const VertexPose* pose2, Eigen::Vector2d* intersection=nullptr);
+  bool intersects(const GlobalGap& gap, const VertexPose* pose1, const VertexPose* pose2, Eigen::Vector2d* intersection=nullptr, Eigen::Vector2d* gap_start=nullptr, Eigen::Vector2d* gap_end=nullptr);
   bool intersects(const Eigen::Vector2d& p1, const Eigen::Vector2d& p2, const Eigen::Vector2d& p3, const Eigen::Vector2d& p4, Eigen::Vector2d* intersection=nullptr);
 }
 

@@ -183,6 +183,7 @@ void HomotopyClassPlanner::visualize()
 
     // Visualize active tebs as marker
     visualization_->publishTebContainer(tebs_);
+    visualization_->publishGapEdges(tebs_);
 
     // Visualize best teb and feedback message if desired
     TebOptimalPlannerConstPtr best_teb = bestTeb();

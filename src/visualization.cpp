@@ -475,6 +475,70 @@ void TebVisualization::publishFeedbackMessage(const TebOptimalPlanner& teb_plann
   feedback_pub_.publish(msg);
 }
 
+//void addMarker(visualization_msgs::MarkerArray& markers, const EdgeGap* edge, double offset = 0, Eigen::Vector2d* pose=NULL);
+/*
+void TebVisualization::addGapEdge(const EdgeGap* edge, const Eigen::Vector2d* pose)
+{
+  boost::mutex::scoped_lock lock(gap_edges_mutex_);
+  if(gap_edges_markers_.markers.size()==0)
+  {
+    
+    visualization_msgs::Marker gap_marker;
+    gap_marker.type = visualization_msgs::Marker::LINE_LIST;
+    gap_marker.ns = "gap_poses";
+    gap_marker.id = 0;
+    gap_marker.action = visualization_msgs::Marker::ADD;
+    
+    gap_marker.scale.x = .04;
+    
+    gap_edges_markers_.markers.push_back(gap_marker);
+    
+    gap_marker.ns = "gap_borders";
+    gap_marker.scale.x = .02;
+    gap_edges_markers_.markers.push_back(gap_marker);
+    
+    gap_marker.ns = "gap_normals";
+    gap_edges_markers_.markers.push_back(gap_marker);
+  }
+  addMarker(gap_edges_markers_, edge);
+  
+  
+}*/
+
+void TebVisualization::publishGapEdges(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planner, const std::string& ns)
+{
+//   std_msgs::Header header;
+//   header.stamp = ros::Time::now();
+//   header.frame_id = cfg_->map_frame;
+//   
+//   for(auto& marker : markers.markers)
+//   {
+//     marker.header = header;
+//   }
+  visualization_msgs::MarkerArray combined_markers;
+  if(teb_planner.size()>0)
+  {
+    combined_markers = *teb_planner[0]->getEdgeGapMarkers();
+    
+    for(int i = 1; i < teb_planner.size(); ++i)
+    {
+      const visualization_msgs::MarkerArray& teb_markers = *teb_planner[i]->getEdgeGapMarkers();
+      
+      for(int j = 0; j < teb_markers.markers.size(); ++j)
+      {
+        visualization_msgs::Marker& dest_m = combined_markers.markers[j];
+        const visualization_msgs::Marker& src_m = teb_markers.markers[j];
+        dest_m.points.insert(std::end(dest_m.points), std::begin(src_m.points), std::end(src_m.points));
+        dest_m.colors.insert(std::end(dest_m.colors), std::begin(src_m.colors), std::end(src_m.colors));
+      }
+      
+    }
+  }
+  
+  teb_marker_pub_.publish(combined_markers);
+  //gap_edges_markers_.markers.clear();
+}
+
 bool TebVisualization::printErrorWhenNotInitialized() const
 {
   if (!initialized_)

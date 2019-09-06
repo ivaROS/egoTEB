@@ -117,10 +117,10 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
   #else 
     marker.scale.x = 0.01;
   #endif
-    marker.color.a = 1.0;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+//     marker.color.a = 1.0;
+//     marker.color.r = 0.0;
+//     marker.color.g = 1.0;
+//     marker.color.b = 0.0;
 
     // Now publish edge markers
     //teb_marker_pub_.publish( marker );
@@ -172,10 +172,10 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
     
     marker.scale.x = 0.1;
     marker.scale.y = 0.1;
-    marker.color.a = 1.0;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+//     marker.color.a = 1.0;
+//     marker.color.r = 0.0;
+//     marker.color.g = 1.0;
+//     marker.color.b = 0.0;
 
     markers.markers.push_back(marker);
   }

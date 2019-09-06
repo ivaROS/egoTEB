@@ -4,12 +4,14 @@
 namespace teb_local_planner
 {
 
-  double computeBoundaryError(Eigen::Vector2d pnt, Eigen::Vector2d bnv, double boundary_ratio, double boundary_exponent, double boundary_threshold)
+  double computeBoundaryError(Eigen::Vector2d gap_center, Eigen::Vector2d pnt, double gap_radius, double boundary_ratio, double boundary_exponent, double boundary_threshold)
   {
-    double dot_prod = pnt.dot(bnv);
+    //double dot_prod = pnt.dot(bnv);
+    double dist = (gap_center-pnt).norm();
+    dist = dist/gap_radius;
     
     //double x = dot_prod/delta + 1 + cfg_.gaps.gap_boundary_tolerance;
-    double bounded = penaltyBoundFromBelow(-dot_prod/boundary_ratio, 0, 1+boundary_threshold/boundary_ratio);
+    double bounded = penaltyBoundFromBelow(dist/(boundary_ratio-boundary_threshold), 0, -boundary_threshold/(boundary_ratio-boundary_threshold));
     
     double exp = pow(bounded,2*boundary_exponent);
     return exp;
@@ -17,13 +19,14 @@ namespace teb_local_planner
   
   double EdgeGap::calculateError(Eigen::Vector2d pos)
   {
-    Eigen::Vector2d pnt = pos- initial_pos_;
+    //Eigen::Vector2d pnt = pos- initial_pos_;
     
-    double costl = computeBoundaryError(pnt, left_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
-    double costr = computeBoundaryError(pnt, right_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
-    ROS_DEBUG_STREAM_NAMED("gap_cost","Gap: [" << _measurement[0].x << "," << _measurement[0].y <<"] - [" << _measurement[1].x << "," << _measurement[1].y << "]. Pose: (" << pos.x() << "," << pos.y() << ") Costl: " << costl << ", Costr: " << costr);
+    double cost = computeBoundaryError(gap_center_, pos, gap_radius_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
+    //double costr = computeBoundaryError(pnt, right_bnv_, cfg_->gaps.gap_boundary_ratio, cfg_->gaps.gap_boundary_exponent, cfg_->gaps.gap_boundary_threshold); 
+    ROS_DEBUG_STREAM_NAMED("gap_cost","Gap: [" << gap_start_.x() << "," << gap_start_.y() <<"] - [" << gap_end_.x() << "," << gap_end_.y() << "]. Pose: (" << pos.x() << "," << pos.y() << ") Cost: " << cost);
     
-    return std::max(costl, costr);
+
+    return cost;  
   }
   
   void EdgeGap::computeError()
@@ -57,17 +60,23 @@ namespace teb_local_planner
     return bnv;
   }
   
-  void EdgeGap::setParameters(const TebConfig& cfg, const GlobalGap gap, const Eigen::Vector2d initial_pos)
+  void EdgeGap::setParameters(const TebConfig& cfg, const Eigen::Vector2d& gap_start, const Eigen::Vector2d& gap_end)
   {
     cfg_ = &cfg;
-    Eigen::Vector2d gapr(gap.front().x, gap.front().y);
-    Eigen::Vector2d gapl(gap.back().x, gap.back().y);
+    //Eigen::Vector2d gapr(gap.front().x, gap.front().y);
+    //Eigen::Vector2d gapl(gap.back().x, gap.back().y);
     
-    left_bnv_ = getBoundaryNormalVector(gapl, true, initial_pos);
-    right_bnv_ = getBoundaryNormalVector(gapr, false, initial_pos);
+    //left_bnv_ = getBoundaryNormalVector(gapl, true, initial_pos);
+    //right_bnv_ = getBoundaryNormalVector(gapr, false, initial_pos);
     
-    _measurement = gap;
-    initial_pos_ = initial_pos;
+    //_measurement = gap;
+    //initial_pos_ = initial_pos;
+    gap_center_ = (gap_start+gap_end)/2;
+    //_measurement.push_back(gap_start);
+    //_measurement.push_back(gap_end);
+    gap_start_ = gap_start;
+    gap_end_ = gap_end;
+    gap_radius_ = (gap_start-gap_end).norm()/2;
   }
 
 
