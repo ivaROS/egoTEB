@@ -8,12 +8,14 @@ namespace teb_local_planner
   {
     //double dot_prod = pnt.dot(bnv);
     double dist = (gap_center-pnt).norm();
-    dist = dist/gap_radius;
+    double rem_dist = dist/gap_radius;
     
     //double x = dot_prod/delta + 1 + cfg_.gaps.gap_boundary_tolerance;
-    double bounded = penaltyBoundFromBelow(dist/(boundary_ratio-boundary_threshold), 0, -boundary_threshold/(boundary_ratio-boundary_threshold));
+    double bounded = penaltyBoundFromBelow(-rem_dist/(boundary_ratio-boundary_threshold), 0, -boundary_threshold/(boundary_ratio-boundary_threshold));
     
     double exp = pow(bounded,2*boundary_exponent);
+    
+    ROS_INFO_STREAM("[EdgeGap] Gap center: [" << gap_center.x() << "," << gap_center.y() << "], pnt: [" << pnt.x() << "," << pnt.y() << "], radius: " << gap_radius << ", dist: " << dist << ", rem_dist: " << rem_dist << ", bounded: " << bounded);
     return exp;
   }
   
