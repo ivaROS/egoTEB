@@ -59,6 +59,16 @@ namespace teb_local_planner
         
         int num_segments = std::ceil((gap.end.theta-gap.start.theta) / MAX_GAP_RAD);
         
+        {
+          int start_ind = container_->indexer.getIndex(gap.start);
+          int actual_start_ind = inflator_->getInds()[start_ind];
+          auto actual_start_point = container_->points[actual_start_ind];
+          
+          ego_circle::EgoCircularPoint global_point(actual_start_point);
+          toGlobal(global_point);
+          //gap_vec.push_back(global_point);
+        }
+        
         for(int segment = 0; segment < num_segments + 1; segment++)
         {
           double interp_r = gap.start.r + (gap.end.r - gap.start.r)*segment/num_segments;
@@ -68,6 +78,16 @@ namespace teb_local_planner
           ego_circle::EgoCircularPoint global_point(p);
           toGlobal(global_point);
           gap_vec.push_back(global_point);
+        }
+        
+        {
+          int end_ind = container_->indexer.getIndex(gap.end);
+          int actual_end_ind = inflator_->getInds()[end_ind];
+          auto actual_end_point = container_->points[actual_end_ind];
+          
+          ego_circle::EgoCircularPoint global_point(actual_end_point);
+          toGlobal(global_point);
+          //gap_vec.push_back(global_point);
         }
         
         global_gaps_.push_back(gap_vec);
@@ -98,9 +118,10 @@ namespace teb_local_planner
         
         global_egocircle_marker.color = global_egocircle_color;
         
-        for(auto it : ego_circle::LaserScanWrapper(*scan_msg))
+        //for(auto it : ego_circle::LaserScanWrapper(*scan_msg))
+        for(auto d : container_->points)
         {
-          auto d = ego_circle::PolarPoint(it);
+          //auto d = ego_circle::PolarPoint(it);
           ego_circle::EgoCircularPoint pt = d;
           toGlobal(pt);
     

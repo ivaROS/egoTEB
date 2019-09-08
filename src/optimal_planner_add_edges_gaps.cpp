@@ -189,6 +189,7 @@ void TebOptimalPlanner::AddEdgesGaps()
       gap_edge->setParameters(*cfg_, gap_start, gap_end);
       optimizer_->addEdge(gap_edge);
 
+      ROS_INFO_STREAM("Adding gap: " << gap_start.x() << "," << gap_start.y() << "] " << gap_end.x() << "," << gap_end.y() << "}");
       addMarker(gap_markers_, gap_edge, offset, &teb_.PoseVertex(closest_pose)->pose().position());
       //visualization_->addGapEdge(gap_edge, &teb_.PoseVertex(closest_pose)->pose().position());
       
