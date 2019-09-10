@@ -142,7 +142,7 @@ bool HomotopyClassPlanner::plan(const PoseSE2& start, const PoseSE2& goal, const
 //     visualization_->publishTebContainer(tebs_, std::string("optimized_" + std::to_string(i)));
 //   }
   
-  optimizeAllTEBs(cfg_->optim.no_inner_iterations, cfg_->optim.no_inner_iterations);
+  optimizeAllTEBs(cfg_->optim.no_inner_iterations, cfg_->optim.no_outer_iterations);
   visualization_->publishTebContainer(tebs_, std::string("optimized"));
   
   // Delete any detours
