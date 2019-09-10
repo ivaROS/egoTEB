@@ -63,6 +63,8 @@ unsigned int no_fixed_obstacles;
 std::shared_ptr<ego_circle::EgoCircleROS> circle_wrapper;
 ego_circle::EgoCircle* circle_;
 
+double x_trans=2;
+
 std::shared_ptr<EgoCircleInterface> egocircle_;
 std::shared_ptr<egocircle_utils::InterfaceUpdater>egocircle_wrapper_;
 
@@ -162,9 +164,13 @@ int main( int argc, char** argv )
   egocircle_ = std::make_shared<EgoCircleInterface>(n, n);
   
   geometry_msgs::TransformStamped transform;
-  transform.transform.translation.x=4;
+  transform.header.frame_id="fixed_start";
+  transform.transform.translation.x=x_trans;
   transform.transform.rotation.w=1;
+  transform.child_frame_id="odom";
   egocircle_->setTransform(transform);
+  egocircle_->setInflationRadius(.21);
+  egocircle_->setSearchRadius(1);
   
   // Setup planner (homotopy class planning or just the local teb planner)
   if (config.hcp.enable_homotopy_class_planning)
@@ -183,7 +189,7 @@ int main( int argc, char** argv )
 void CB_mainCycle(const ros::TimerEvent& e)
 {
   updateEgocircle(e.current_real);
-  planner->plan(PoseSE2(-4,0,0), PoseSE2(4,0,0)); // hardcoded start and goal for testing purposes
+  planner->plan(PoseSE2(-x_trans,0,0), PoseSE2(-.5,0,0)); // hardcoded start and goal for testing purposes
 }
 
 // Visualization loop
@@ -206,7 +212,7 @@ void updateEgocircle(ros::Time time)
   {
     PointObstacle* pobst = static_cast<PointObstacle*>(obst_vector.at(i).get());
     Eigen::Vector2d pos = pobst->position();
-    ego_circle::EgoCircularPoint p(pos.x()+4, pos.y());
+    ego_circle::EgoCircularPoint p(pos.x()+x_trans, pos.y());
     points.push_back(p);
   }
   
@@ -226,6 +232,12 @@ void updateEgocircle(ros::Time time)
   scan.range_max = circle.max_depth_ + ego_circle::EgoCircleROS::OFFSET;  //TODO: make this .01 and see if still visible. Or even get rid of the increase so that only actual points are shown; maybe make it a parameter
   
   sensor_msgs::LaserScan::ConstPtr scan_ptr(new sensor_msgs::LaserScan(scan));
+  
+  geometry_msgs::TransformStamped transform;
+  transform.header = scan.header;
+  transform.transform.rotation.w = 1;
+  transform.child_frame_id = scan.header.frame_id;
+  //egocircle_->setTransform(transform);
   egocircle_->update(scan_ptr); 
 }
 

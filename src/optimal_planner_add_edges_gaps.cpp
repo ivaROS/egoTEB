@@ -122,6 +122,8 @@ void addMarker(visualization_msgs::MarkerArray& markers, const EdgeGap* edge, do
   
 void TebOptimalPlanner::AddEdgesGaps()
 {
+  gap_pose_ind_ = -1;
+  
   if(cfg_->optim.weight_gap <= 0)
     return;
   
@@ -194,6 +196,9 @@ void TebOptimalPlanner::AddEdgesGaps()
       //visualization_->addGapEdge(gap_edge, &teb_.PoseVertex(closest_pose)->pose().position());
       
       offset += .06;
+      
+      gap_pose_ind_ = closest_pose;
+      break;  //prevent adding multiple gap constraints per trajectory
     }
   }
   

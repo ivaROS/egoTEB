@@ -693,6 +693,8 @@ protected:
   const ViaPointContainer* via_points_; //!< Store via points for planning
   const EgoCircleInterface* egocircle_;
   
+  int gap_pose_ind_;
+  
   visualization_msgs::MarkerArray gap_markers_;
   
   ros::Publisher gap_pub_;

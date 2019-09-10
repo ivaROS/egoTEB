@@ -7,6 +7,8 @@ namespace teb_local_planner
     {
       Eigen::Vector2d p1 = pose1->pose().position();
       Eigen::Vector2d p2 = pose2->pose().position();
+      ROS_DEBUG_STREAM_NAMED("[intersects]","Checking intersections of " << p1.x() << "," << p1.y() << ") : (" << p2.x() << "," << p2.y() << ")");
+      
       
       int num_segments = gap.size() - 1;
       for(int segment=0; segment < num_segments; segment++)
@@ -37,9 +39,12 @@ namespace teb_local_planner
       m.col(0) = p4-p3;
       m.col(1) = -(p2-p1);
       
+      double eps = .01;
+      
       Eigen::Vector2d res = m.inverse() * (p1-p3);
       
-      if(res.x()>0 && res.x() < 1 && res.y() >0 && res.y() < 1)
+      ROS_DEBUG_STREAM_NAMED("[intersects]","Intersection results: (" << p3.x() << "," << p3.y() << ") : (" << p4.x() << "," << p4.y() << ") = " << res.x() << ", " << res.y());
+      if(res.x()>=-eps && res.x() < 1+eps && res.y() >-eps && res.y() < 1+eps)
       {
         if(intersection)
         {

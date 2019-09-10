@@ -338,6 +338,9 @@ bool TebOptimalPlanner::buildGraph(double weight_multiplier)
 
   AddEdgesTimeOptimal();	
   
+  //if(cfg_->hcp.use_gaps)
+  AddEdgesGaps(); //Gaps must be calculated before kinematics
+  
   if (cfg_->robot.min_turning_radius == 0 || cfg_->optim.weight_kinematics_turning_radius == 0)
     AddEdgesKinematicsDiffDrive(); // we have a differential drive robot
   else
@@ -345,9 +348,6 @@ bool TebOptimalPlanner::buildGraph(double weight_multiplier)
 
     
   AddEdgesPreferRotDir();
-  
-  //if(cfg_->hcp.use_gaps)
-  AddEdgesGaps();
   
   ROS_INFO_STREAM_NAMED("timing", "[buildGraph] took " << (ros::WallTime::now() - start_time).toSec() * 1000 << "ms");
   
@@ -900,7 +900,7 @@ void TebOptimalPlanner::AddEdgesTimeOptimal()
 }
 
 
-
+/*
 void TebOptimalPlanner::AddEdgesKinematicsDiffDrive()
 {
   if (cfg_->optim.weight_kinematics_nh==0 && cfg_->optim.weight_kinematics_forward_drive==0)
@@ -921,7 +921,7 @@ void TebOptimalPlanner::AddEdgesKinematicsDiffDrive()
     kinematics_edge->setTebConfig(*cfg_);
     optimizer_->addEdge(kinematics_edge);
   }	 
-}
+}*/
 
 void TebOptimalPlanner::AddEdgesKinematicsCarlike()
 {
