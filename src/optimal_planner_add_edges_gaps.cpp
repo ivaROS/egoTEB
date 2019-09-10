@@ -129,31 +129,30 @@ void TebOptimalPlanner::AddEdgesGaps()
   
   Eigen::Vector2d start_pos = teb_.PoseVertex(0)->pose().position();
   
-  //if(gap_markers_.markers.size()==0)
-  
-  gap_markers_.markers.clear();
-  
-  std_msgs::Header header;
-  header.stamp = ros::Time::now(); //egocircle_->getCurrentHeader().stamp;
-  header.frame_id = cfg_->map_frame;
-  
-  visualization_msgs::Marker gap_marker;
-  gap_marker.type = visualization_msgs::Marker::LINE_LIST;
-  gap_marker.header = header;
-  gap_marker.ns = "gap_poses";
-  gap_marker.id = 0;
-  gap_marker.action = visualization_msgs::Marker::ADD;
+  if(gap_markers_.markers.size()==0)
+  {
+    std_msgs::Header header;
+    header.stamp = ros::Time::now(); //egocircle_->getCurrentHeader().stamp;
+    header.frame_id = cfg_->map_frame;
+    
+    visualization_msgs::Marker gap_marker;
+    gap_marker.type = visualization_msgs::Marker::LINE_LIST;
+    gap_marker.header = header;
+    gap_marker.ns = "gap_poses";
+    gap_marker.id = 0;
+    gap_marker.action = visualization_msgs::Marker::ADD;
 
-  gap_marker.scale.x = .04;
-  
-  gap_markers_.markers.push_back(gap_marker);
-  
-  gap_marker.ns = "gap_borders";
-  gap_marker.scale.x = .02;
-  gap_markers_.markers.push_back(gap_marker);
-  
-  gap_marker.ns = "gap_normals";
-  gap_markers_.markers.push_back(gap_marker);
+    gap_marker.scale.x = .04;
+    
+    gap_markers_.markers.push_back(gap_marker);
+    
+    gap_marker.ns = "gap_borders";
+    gap_marker.scale.x = .02;
+    gap_markers_.markers.push_back(gap_marker);
+    
+    gap_marker.ns = "gap_normals";
+    gap_markers_.markers.push_back(gap_marker);
+  }
   
   
   // create edge for staying within gaps

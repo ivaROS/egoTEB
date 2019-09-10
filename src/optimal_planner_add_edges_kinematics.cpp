@@ -31,8 +31,8 @@ void TebOptimalPlanner::AddEdgesKinematicsDiffDrive()
     double abs_gap_angle = std::abs(gap_angle);
    
     double PI = std::acos(-1);
-    double start_descending_angle = PI/12;
-    double min_weight_angle = PI/3;
+    double start_descending_angle = cfg_->optim.gap_theta_start;
+    double min_weight_angle = cfg_->optim.gap_theta_end;
     
     if(abs_gap_angle < start_descending_angle)
       final_factor = 1;

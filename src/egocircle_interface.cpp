@@ -55,7 +55,7 @@ namespace teb_local_planner
         
         egocircle_utils::gap_finding::Gap& gap = gaps_[i];
         
-        double MAX_GAP_RAD = std::acos(-1)/8;
+        double MAX_GAP_RAD = std::acos(-1)/2;
         
         int num_segments = std::ceil((gap.end.theta-gap.start.theta) / MAX_GAP_RAD);
         

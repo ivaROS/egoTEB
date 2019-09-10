@@ -181,6 +181,9 @@ bool TebOptimalPlanner::optimizeTEB(int iterations_innerloop, int iterations_out
   bool success = false;
   optimized_ = false;
   
+  gap_markers_.markers.clear();
+  
+  
   double weight_multiplier = 1.0;
 
   // TODO(roesmann): we introduced the non-fast mode with the support of dynamic obstacles

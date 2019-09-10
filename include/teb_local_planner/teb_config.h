@@ -165,6 +165,8 @@ public:
     double weight_viapoint; //!< Optimization weight for minimizing the distance to via-points
     double weight_prefer_rotdir; //!< Optimization weight for preferring a specific turning direction (-> currently only activated if an oscillation is detected, see 'oscillation_recovery'
     double weight_gap;
+    double gap_theta_start;
+    double gap_theta_end;
     
     double weight_adapt_factor; //!< Some special weights (currently 'weight_obstacle') are repeatedly scaled by this factor in each outer TEB iteration (weight_new = weight_old*factor); Increasing weights iteratively instead of setting a huge value a-priori leads to better numerical conditions of the underlying optimization problem.
   } optim; //!< Optimization related parameters
@@ -323,6 +325,8 @@ public:
     optim.weight_viapoint = 1;
     optim.weight_prefer_rotdir = 50;
     optim.weight_gap = 1;
+    optim.gap_theta_start = .26;
+    optim.gap_theta_end = 1.05;
     
     optim.weight_adapt_factor = 2.0;
     

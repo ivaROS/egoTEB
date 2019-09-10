@@ -129,6 +129,8 @@ void TebConfig::loadRosParamFromNodeHandle(const ros::NodeHandle& nh)
   nh.param("weight_gap", optim.weight_gap, optim.weight_gap);
   nh.param("weight_prefer_rotdir", optim.weight_prefer_rotdir, optim.weight_prefer_rotdir);
   nh.param("weight_adapt_factor", optim.weight_adapt_factor, optim.weight_adapt_factor);
+  nh.param("gap_theta_start", optim.gap_theta_start, optim.gap_theta_start);
+  nh.param("gap_theta_end", optim.gap_theta_end, optim.gap_theta_end);
   
   // Homotopy Class Planner
   nh.param("enable_homotopy_class_planning", hcp.enable_homotopy_class_planning, hcp.enable_homotopy_class_planning); 
@@ -246,6 +248,8 @@ void TebConfig::reconfigure(TebLocalPlannerReconfigureConfig& cfg)
   optim.weight_viapoint = cfg.weight_viapoint;
   optim.weight_gap = cfg.weight_gap;
   optim.weight_adapt_factor = cfg.weight_adapt_factor;
+  optim.gap_theta_start = cfg.gap_theta_start;
+  optim.gap_theta_end = cfg.gap_theta_end;
   
   // Homotopy Class Planner
   hcp.enable_multithreading = cfg.enable_multithreading;
