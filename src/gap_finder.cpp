@@ -55,6 +55,9 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   
   ROS_INFO_STREAM_NAMED("gap_finder", "diff: [" << diff.x() << "," << diff.y() << "], obstacle_heading_threshold: " << obstacle_heading_threshold);
   
+  HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
+  graph_[start_vtx].pos = start.position();
+  
   // Start sampling
   for (int i=0; i < gap_points.size(); ++i)
   {
@@ -121,11 +124,11 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
       // Add new vertex
       HcGraphVertexType v = boost::add_vertex(graph_);
       graph_[v].pos = best_gap_point;
+      boost::add_edge(start_vtx, v, graph_);
+      
     }
   }
   
-  HcGraphVertexType start_vtx = boost::add_vertex(graph_); // start vertex
-  graph_[start_vtx].pos = start.position();
   
   // Now add goal vertex
   HcGraphVertexType goal_vtx = boost::add_vertex(graph_); // goal vertex
@@ -137,11 +140,10 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   
   // Insert Edges
   HcGraphVertexIterator it_i, end_i;
-  for (boost::tie(it_i,end_i) = boost::vertices(graph_); it_i!=boost::prior(end_i,2); ++it_i) // ignore start and goal in this loop
+  for (boost::tie(it_i,end_i) = boost::vertices(graph_); it_i!=boost::prior(end_i,1); ++it_i) // ignore start and goal in this loop
   {
-    boost::add_edge(start_vtx, *it_i, graph_);
 
-    // Collision Check between gap vertex and goal
+    // Collision Check between verticies (start and gap vertices) and goal
     {
       bool collision = false;
       for (ObstContainer::const_iterator it_obst = hcp_->obstacles()->begin(); it_obst != hcp_->obstacles()->end(); ++it_obst)
@@ -157,23 +159,6 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
       
       // Create Edge
       boost::add_edge(*it_i, goal_vtx, graph_);
-    }
-  }
-  
-  //Finally, Collision Check between start and goal
-  {
-    bool collision = false;
-    for (ObstContainer::const_iterator it_obst = hcp_->obstacles()->begin(); it_obst != hcp_->obstacles()->end(); ++it_obst)
-    {
-      if ( (*it_obst)->checkLineIntersection(start.position(), goal.position(), dist_to_obst) )
-      {
-        collision = true;
-        break;
-      }
-    }
-    if (!collision)
-    {
-      boost::add_edge(start_vtx, goal_vtx, graph_);
     }
   }
   
