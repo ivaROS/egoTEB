@@ -15,7 +15,7 @@ namespace teb_local_planner
     
     double exp = pow(bounded,2*boundary_exponent);
     
-    ROS_INFO_STREAM("[EdgeGap] Gap center: [" << gap_center.x() << "," << gap_center.y() << "], pnt: [" << pnt.x() << "," << pnt.y() << "], radius: " << gap_radius << ", dist: " << dist << ", rem_dist: " << rem_dist << ", bounded: " << bounded);
+    ROS_DEBUG_STREAM("[EdgeGap] Gap center: [" << gap_center.x() << "," << gap_center.y() << "], pnt: [" << pnt.x() << "," << pnt.y() << "], radius: " << gap_radius << ", dist: " << dist << ", rem_dist: " << rem_dist << ", bounded: " << bounded);
     return exp;
   }
   

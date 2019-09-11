@@ -187,10 +187,23 @@ void TebOptimalPlanner::AddEdgesGaps()
       EdgeGap* gap_edge = new EdgeGap;
       gap_edge->setVertex(0,teb_.PoseVertex(closest_pose));
       gap_edge->setInformation(information_gap);
+      
+      auto start_int = (gap_start-intersection_point);
+      auto end_int = (gap_end - intersection_point);
+      double start_norm = start_int.norm();
+      double end_norm = end_int.norm();
+      if(start_norm>.2 && end_norm>.2)
+      {
+        double rad = std::min(start_norm, end_norm);
+        //gap_start = intersection_point+start_int*rad;
+        //gap_end = intersection_point+end_int*rad;
+      }
+      
+      
       gap_edge->setParameters(*cfg_, gap_start, gap_end);
       optimizer_->addEdge(gap_edge);
 
-      ROS_INFO_STREAM("Adding gap: " << gap_start.x() << "," << gap_start.y() << "] " << gap_end.x() << "," << gap_end.y() << "}");
+      ROS_INFO_STREAM("Adding gap: " << gap_start.x() << "," << gap_start.y() << "] " << gap_end.x() << "," << gap_end.y() << "}, start_norm: " << start_norm << ", end_norm: " << end_norm << ": intersection: [" << intersection_point.x() << "," << intersection_point.y() << "]");
       addMarker(gap_markers_, gap_edge, offset, &teb_.PoseVertex(closest_pose)->pose().position());
       //visualization_->addGapEdge(gap_edge, &teb_.PoseVertex(closest_pose)->pose().position());
       

@@ -41,6 +41,8 @@
 #include <limits>
 
 #include <visualization_msgs/MarkerArray.h>
+#include <teb_local_planner/teb_validity_checker.h>
+
 
 namespace teb_local_planner
 {
@@ -1337,6 +1339,8 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Po
   if (look_ahead_idx < 0 || look_ahead_idx >= teb().sizePoses())
     look_ahead_idx = teb().sizePoses() - 1;
   
+  bool ret_val = true;
+  
   for (int i=0; i <= look_ahead_idx; ++i)
   {           
     //if ( costmap_model->footprintCost(teb().Pose(i).x(), teb().Pose(i).y(), teb().Pose(i).theta(), footprint_spec, inscribed_radius, circumscribed_radius) < 0 )
@@ -1350,7 +1354,8 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Po
     if(min_dist < inscribed_radius)
     {
       ROS_WARN("Too close: trajectory is infeasible.");
-      return false;
+      ret_val = false;
+      break;
     }
     
     // check if distance between two poses is higher than the robot radius and interpolate in that case
@@ -1383,7 +1388,8 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Po
           if(min_dist < inscribed_radius)
           {
             ROS_WARN("Too close: trajectory is infeasible.");
-            return false;
+            ret_val = false;
+            break;
           }
         }
         
@@ -1391,7 +1397,15 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Po
       
     }
   }
-  return true;
+  
+  /*
+  bool teb_collides = checkTebValidity(teb(), egocircle_);
+  if(ret_val == teb_collides)
+      ROS_WARN_STREAM("Validity checker disagrees!");
+  */
+  
+  //return !teb_collides; //
+  return ret_val;
 }
 
 

@@ -1,5 +1,6 @@
 
 #include <teb_local_planner/optimal_planner.h>
+#include <angles/angles.h>
 
 namespace teb_local_planner
 {
@@ -26,9 +27,9 @@ void TebOptimalPlanner::AddEdgesKinematicsDiffDrive()
     auto P2 = gap_pose.position();
     auto P3 = end_pose.position();
     double gap_angle = std::atan2(P3.y() - P1.y(), P3.x() - P1.x()) - std::atan2(P2.y() - P1.y(), P2.x() - P1.x());
+    double normalized_gap_angle = angles::normalize_angle(gap_angle);
     
-    
-    double abs_gap_angle = std::abs(gap_angle);
+    double abs_gap_angle = std::abs(normalized_gap_angle);
    
     double PI = std::acos(-1);
     double start_descending_angle = cfg_->optim.gap_theta_start;
@@ -43,7 +44,7 @@ void TebOptimalPlanner::AddEdgesKinematicsDiffDrive()
       final_factor = (min_weight_angle - abs_gap_angle)/(min_weight_angle-start_descending_angle);
     }
     
-    ROS_INFO_STREAM("Gap angle: " << gap_angle << ", final_factor: " << final_factor);
+    ROS_INFO_STREAM("Gap angle: " << normalized_gap_angle << ", final_factor: " << final_factor);
     
     
   }
