@@ -544,6 +544,7 @@ void HomotopyClassPlanner::deleteTebDetours(double threshold)
         it_eqclasses = equivalence_classes_.erase(it_eqclasses);
         modified = true;
         ROS_WARN("HomotopyClassPlanner::deleteTebDetours(): removing candidate that detours backwards");
+        continue;
       }
     }
 
@@ -555,6 +556,7 @@ void HomotopyClassPlanner::deleteTebDetours(double threshold)
       it_eqclasses = equivalence_classes_.erase(it_eqclasses);
       modified = true;
       ROS_WARN("HomotopyClassPlanner::deleteTebDetours(): removing candidate that was not optimized successfully");
+      continue;
     }
 
     if (!modified)
