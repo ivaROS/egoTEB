@@ -47,7 +47,7 @@ namespace teb_local_planner
 template <typename GraphType>
 void TebVisualization::publishGraph(const GraphType& graph, const std::string& ns_prefix)
 {	 
-  if ( printErrorWhenNotInitialized() )
+  if ( printErrorWhenNotInitialized() || teb_marker_pub_.getNumSubscribers()==0)
     return;
   
   typedef typename boost::graph_traits<GraphType>::vertex_iterator GraphVertexIterator;
@@ -187,7 +187,7 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
 template <typename BidirIter>
 void TebVisualization::publishPathContainer(BidirIter first, BidirIter last, const std::string& ns)
 {
-  if ( printErrorWhenNotInitialized() )
+  if ( printErrorWhenNotInitialized() || teb_marker_pub_.getNumSubscribers()==0)
     return;
   
   visualization_msgs::Marker marker;

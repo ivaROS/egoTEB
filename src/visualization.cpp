@@ -74,20 +74,21 @@ void TebVisualization::initialize(ros::NodeHandle& nh, const TebConfig& cfg)
 
 void TebVisualization::publishGlobalPlan(const std::vector<geometry_msgs::PoseStamped>& global_plan) const
 {
-  if ( printErrorWhenNotInitialized() ) return;
+  if ( printErrorWhenNotInitialized() || global_plan_pub_.getNumSubscribers()==0) 
+    return;
   base_local_planner::publishPlan(global_plan, global_plan_pub_); 
 }
 
 void TebVisualization::publishLocalPlan(const std::vector<geometry_msgs::PoseStamped>& local_plan) const
 {
-  if ( printErrorWhenNotInitialized() )
+  if ( printErrorWhenNotInitialized() || local_plan_pub_.getNumSubscribers()==0)
     return;
   base_local_planner::publishPlan(local_plan, local_plan_pub_); 
 }
 
 void TebVisualization::publishLocalPlanAndPoses(const TimedElasticBand& teb) const
 {
-  if ( printErrorWhenNotInitialized() )
+  if ( printErrorWhenNotInitialized() || (teb_poses_pub_.getNumSubscribers()==0 && local_plan_pub_.getNumSubscribers()==0))
     return;
   
     // create path msg
@@ -121,7 +122,7 @@ void TebVisualization::publishLocalPlanAndPoses(const TimedElasticBand& teb) con
 
 void TebVisualization::publishRobotFootprintModel(const PoseSE2& current_pose, const BaseRobotFootprintModel& robot_model, const std::string& ns)
 {
-  if ( printErrorWhenNotInitialized() )
+  if ( printErrorWhenNotInitialized() || teb_marker_pub_.getNumSubscribers()==0)
     return;
   
   //std::vector<visualization_msgs::Marker> markers;
@@ -148,7 +149,7 @@ void TebVisualization::publishRobotFootprintModel(const PoseSE2& current_pose, c
 
 void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
 {
-  if ( obstacles.empty() || printErrorWhenNotInitialized() )
+  if ( obstacles.empty() || printErrorWhenNotInitialized() || teb_marker_pub_.getNumSubscribers()==0)
     return;
   
   visualization_msgs::MarkerArray marker_array;
@@ -274,18 +275,18 @@ void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
 				continue;
       
       int idx = 0;
-      for (Point2dContainer::const_iterator vertex = pobst->vertices().begin(); vertex != pobst->vertices().end(); ++vertex)
+      for (Point2dContainer::const_iterator vertex = pobst->vertices().begin(); vertex != boost::prior(pobst->vertices().end()); ++vertex)
       {
         geometry_msgs::Point point;
         point.x = vertex->x();
         point.y = vertex->y();
         point.z = 0;
-        
-        if(idx>1)
-        {
-          marker.points.push_back(marker.points.back());
-        }
         marker.points.push_back(point);
+        
+        point.x = boost::next(vertex)->x();
+        point.y = boost::next(vertex)->y();
+        marker.points.push_back(point);
+        
       }
       
       // Also add last point to close the polygon
@@ -311,7 +312,7 @@ void TebVisualization::publishObstacles(const ObstContainer& obstacles) const
 
 void TebVisualization::publishViaPoints(const std::vector< Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> >& via_points, const std::string& ns) const
 {
-  if ( via_points.empty() || printErrorWhenNotInitialized() )
+  if ( via_points.empty() || printErrorWhenNotInitialized() || teb_marker_pub_.getNumSubscribers()==0)
     return;
   
   visualization_msgs::Marker marker;
@@ -346,7 +347,7 @@ void TebVisualization::publishViaPoints(const std::vector< Eigen::Vector2d, Eige
 
 void TebVisualization::publishTebContainer(const TebOptPlannerContainer& teb_planner, const std::string& ns)
 {
-if ( printErrorWhenNotInitialized() )
+  if ( printErrorWhenNotInitialized() || teb_marker_pub_.getNumSubscribers()==0)
     return;
 
   ROS_INFO_STREAM("[" << ns << "] #TEBS: " << teb_planner.size());
@@ -402,6 +403,9 @@ if ( printErrorWhenNotInitialized() )
 void TebVisualization::publishFeedbackMessage(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planners,
                                               unsigned int selected_trajectory_idx, const ObstContainer& obstacles)
 {
+  if(feedback_pub_.getNumSubscribers()==0)
+    return;
+  
   FeedbackMsg msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = cfg_->map_frame;
@@ -443,6 +447,9 @@ void TebVisualization::publishFeedbackMessage(const std::vector< boost::shared_p
 
 void TebVisualization::publishFeedbackMessage(const TebOptimalPlanner& teb_planner, const ObstContainer& obstacles)
 {
+  if(feedback_pub_.getNumSubscribers()==0)
+    return;
+  
   FeedbackMsg msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = cfg_->map_frame;
@@ -507,6 +514,8 @@ void TebVisualization::addGapEdge(const EdgeGap* edge, const Eigen::Vector2d* po
 
 void TebVisualization::publishGapEdges(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planner, const std::string& ns)
 {
+  if(teb_marker_pub_.getNumSubscribers()==0)
+    return;
 //   std_msgs::Header header;
 //   header.stamp = ros::Time::now();
 //   header.frame_id = cfg_->map_frame;

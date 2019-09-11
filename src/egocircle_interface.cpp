@@ -93,54 +93,51 @@ namespace teb_local_planner
         global_gaps_.push_back(gap_vec);
       }
       
-      std_msgs::Header global_header;
-      global_header.stamp = scan_msg->header.stamp; //getStamp();
-      global_header.frame_id = getGlobalFrameId();
-      egocircle_utils::gap_finding::addGlobalGapsToMarker(markers, global_gaps_, global_header);
-      
-      
-      
+      if(gap_pub_.getNumSubscribers()>0)
       {
-        visualization_msgs::Marker global_egocircle_marker;
-        global_egocircle_marker.type = visualization_msgs::Marker::POINTS;
-        global_egocircle_marker.header = global_header;
-        global_egocircle_marker.header.stamp = ros::Time::now();
-        global_egocircle_marker.ns = "transformed_points";
-        global_egocircle_marker.id = 0;
-        global_egocircle_marker.action = visualization_msgs::Marker::ADD;
-        global_egocircle_marker.scale.x = .03;
-        
-        std_msgs::ColorRGBA global_egocircle_color;
-        global_egocircle_color.a = .5;
-        global_egocircle_color.b = 1;
-        
-        global_egocircle_color.r = .5;
-        
-        global_egocircle_marker.color = global_egocircle_color;
-        
-        //for(auto it : ego_circle::LaserScanWrapper(*scan_msg))
-        for(auto d : container_->points)
+        std_msgs::Header global_header;
+        global_header.stamp = scan_msg->header.stamp; //getStamp();
+        global_header.frame_id = getGlobalFrameId();
+        egocircle_utils::gap_finding::addGlobalGapsToMarker(markers, global_gaps_, global_header);
         {
-          //auto d = ego_circle::PolarPoint(it);
-          ego_circle::EgoCircularPoint pt = d;
-          toGlobal(pt);
-    
+          visualization_msgs::Marker global_egocircle_marker;
+          global_egocircle_marker.type = visualization_msgs::Marker::POINTS;
+          global_egocircle_marker.header = global_header;
+          global_egocircle_marker.header.stamp = ros::Time::now();
+          global_egocircle_marker.ns = "transformed_points";
+          global_egocircle_marker.id = 0;
+          global_egocircle_marker.action = visualization_msgs::Marker::ADD;
+          global_egocircle_marker.scale.x = .03;
           
-          geometry_msgs::Point p;
-          p.x = pt.x;
-          p.y = pt.y;
-          p.z = .1;
+          std_msgs::ColorRGBA global_egocircle_color;
+          global_egocircle_color.a = .5;
+          global_egocircle_color.b = 1;
           
-          global_egocircle_marker.points.push_back(p);
+          global_egocircle_color.r = .5;
+          
+          global_egocircle_marker.color = global_egocircle_color;
+          
+          //for(auto it : ego_circle::LaserScanWrapper(*scan_msg))
+          for(auto d : container_->points)
+          {
+            //auto d = ego_circle::PolarPoint(it);
+            ego_circle::EgoCircularPoint pt = d;
+            toGlobal(pt);
+      
+            
+            geometry_msgs::Point p;
+            p.x = pt.x;
+            p.y = pt.y;
+            p.z = .1;
+            
+            global_egocircle_marker.points.push_back(p);
+          }
+          
+          markers.markers.push_back(global_egocircle_marker);
         }
-        
-        markers.markers.push_back(global_egocircle_marker);
-        
+
+        gap_pub_.publish(markers);
       }
-      
-      
-      
-      gap_pub_.publish(markers);
       
       
       if(inflated_egocircle_pub_.getNumSubscribers()>0)
