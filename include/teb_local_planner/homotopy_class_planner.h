@@ -63,7 +63,7 @@
 #include <teb_local_planner/equivalence_relations.h>
 #include <teb_local_planner/graph_search.h>
 
-#include <turtlebot_trajectory_testing/turtlebot_trajectory_tester.h>
+//#include <turtlebot_trajectory_testing/turtlebot_trajectory_tester.h>
 
 
 namespace teb_local_planner
@@ -536,7 +536,7 @@ protected:
   EquivalenceClassContainer equivalence_classes_; //!< Store all known quivalence classes (e.g. h-signatures) to allow checking for duplicates after finding and adding new ones.
                                                                             //   The second parameter denotes whether to exclude the class from detour deletion or not (true: force keeping).
   
-  std::shared_ptr<turtlebot_trajectory_testing::GenAndTest> traj_tester_;
+  //std::shared_ptr<turtlebot_trajectory_testing::GenAndTest> traj_tester_;
   const EgoCircleInterface* egocircle_;
   boost::shared_ptr<GraphSearchInterface> graph_search_;
 

@@ -41,7 +41,7 @@
 #include <limits>
 
 #include <visualization_msgs/MarkerArray.h>
-#include <teb_local_planner/teb_validity_checker.h>
+//#include <teb_local_planner/teb_validity_checker.h>
 
 
 namespace teb_local_planner
@@ -1403,13 +1403,6 @@ bool TebOptimalPlanner::isTrajectoryFeasible(const std::vector<geometry_msgs::Po
     }
   }
   
-  /*
-  bool teb_collides = checkTebValidity(teb(), egocircle_);
-  if(ret_val == teb_collides)
-      ROS_WARN_STREAM("Validity checker disagrees!");
-  */
-  
-  //return !teb_collides; //
   return ret_val;
 }
 

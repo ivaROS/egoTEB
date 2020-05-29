@@ -43,10 +43,11 @@
   <depend>tf</depend>
   <depend>tf_conversions</depend>
   <depend>visualization_msgs</depend>
-  
+  <depend>pips</depend>
+  <depend>pips_trajectory_testing</depend>
   <depend>egocircle_utils</depend>
-  <depend>turtlebot_trajectory_testing</depend>
-  <depend>turtlebot_trajectory_functions</depend>
+  <!--<depend>turtlebot_trajectory_testing</depend> -->
+<!--   <depend>turtlebot_trajectory_functions</depend> -->
   
   <export>
     <nav_core plugin="${prefix}/teb_local_planner_plugin.xml"/>

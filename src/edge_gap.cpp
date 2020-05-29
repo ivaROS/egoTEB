@@ -33,7 +33,7 @@ namespace teb_local_planner
   
   void EdgeGap::computeError()
   {
-    ROS_ASSERT_MSG(cfg_ && _measurement, "You must call setTebConfig() and setGap() on EdgeGap()");
+    ROS_ASSERT_MSG(cfg_, "You must call setParameters on EdgeGap()");
     const VertexPose* pose = static_cast<const VertexPose*>(_vertices[0]);
     
     _error[0] = calculateError(pose->pose().position());

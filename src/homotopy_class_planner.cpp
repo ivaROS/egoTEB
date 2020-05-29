@@ -38,7 +38,7 @@
 
 #include <teb_local_planner/homotopy_class_planner.h>
 #include <teb_local_planner/gap_finder.h>
-#include <teb_local_planner/teb_validity_checker.h>
+//#include <teb_local_planner/teb_validity_checker.h>
 //#include <std_msgs/ColorRGBA.h>
 
 #include <queue>
@@ -266,17 +266,6 @@ void HomotopyClassPlanner::renewAndAnalyzeOldTebs(bool delete_detours)
       it_teb = tebs_.erase(it_teb); // delete candidate and set iterator to the next valid candidate
       ROS_WARN_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it detours backwards");
       continue;
-    }
-    
-    if(cfg_->trajectory.egocircle_feasibility)
-    {
-      bool teb_collides = checkTebValidity(it_teb->get()->teb(), egocircle_);
-      if(teb_collides)
-      {
-        it_teb = tebs_.erase(it_teb);
-        ROS_WARN_STREAM("Deleting candidate in [renewAndAnalyzeOldTebs] since it definitely collides");
-        continue;
-      }
     }
     
     // calculate equivalence class for the current candidate
@@ -715,7 +704,7 @@ TebOptimalPlannerPtr HomotopyClassPlanner::selectBestTeb()
 //       }
 //   }
 
-    ROS_WARN_STREAM("ordered_list contains " << ordered_list.size() << " tebs");
+    ROS_DEBUG_STREAM("ordered_list contains " << ordered_list.size() << " tebs");
 
     // check if we are allowed to change
     if (last_best_teb && best_teb_ != last_best_teb)

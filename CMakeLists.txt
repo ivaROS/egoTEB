@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(teb_local_planner)
 
 # Set to Release in order to speed up the program significantly
-set(CMAKE_BUILD_TYPE Release) #None, Debug, Release, RelWithDebInfo, MinSizeRel
+#set(CMAKE_BUILD_TYPE Release) #None, Debug, Release, RelWithDebInfo, MinSizeRel
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -23,8 +23,10 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
   visualization_msgs
   egocircle_utils
-  turtlebot_trajectory_testing
-  turtlebot_trajectory_functions
+  pips
+  pips_trajectory_testing
+ # turtlebot_trajectory_testing
+ # turtlebot_trajectory_functions
 )
 message(STATUS "System: ${CMAKE_SYSTEM}")
 ## System dependencies are found with CMake's conventions
@@ -163,6 +165,8 @@ catkin_package(
 	tf_conversions
 	visualization_msgs
 	egocircle_utils
+	pips
+	pips_trajectory_testing
   DEPENDS SUITESPARSE G2O
 )
 
@@ -200,8 +204,8 @@ add_library(teb_local_planner
    src/optimal_planner_add_edges_kinematics.cpp
    src/egocircle_gaps.cpp
    src/gap_intersection.cpp
-   src/teb_validity_checker.cpp
    src/egocircle_interface_wrapper.cpp
+   #src/teb_validity_checker.cpp
    #src/ni_initialization.cpp
 )
 
