@@ -198,8 +198,14 @@ public:
    * @param teb_planner Container of boost::shared_ptr< TebOptPlannerPtr >
    * @param ns Namespace for the marker objects
    */
-  void publishTebContainer(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planner, const std::string& ns = "TebContainer");
-    
+  void publishTebContainer(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planner, const std_msgs::ColorRGBA color, const std::string& ns = "TebContainer");
+  
+  void publishTebContainer(const std::vector< boost::shared_ptr<TebOptimalPlanner> >& teb_planner, const std::string& ns = "TebContainer")
+  {
+    publishTebContainer(teb_planner, default_teb_color_, ns);
+  }
+
+  
   /**
    * @brief Publish a feedback message (multiple trajectory version)
    * 
@@ -241,8 +247,10 @@ protected:
   ros::Publisher teb_poses_pub_; //!< Publisher for the trajectory pose sequence
   ros::Publisher teb_marker_pub_; //!< Publisher for visualization markers
   ros::Publisher feedback_pub_; //!< Publisher for the feedback message for analysis and debug purposes
-  
+  bool always_publish_;
   const TebConfig* cfg_; //!< Config class that stores and manages all related parameters
+  
+  std_msgs::ColorRGBA default_teb_color_;
   
   visualization_msgs::MarkerArray gap_edges_markers_;
   bool initialized_; //!< Keeps track about the correct initialization of this class

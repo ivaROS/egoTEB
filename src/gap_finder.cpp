@@ -10,6 +10,8 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   {
     ROS_ERROR("No egocircle impl in gap finder!");
   }
+
+  ros::WallTime starttime = ros::WallTime::now();
   
   // Clear existing graph and paths
   clearGraph();
@@ -75,7 +77,7 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
     Eigen::Vector2d best_gap_point;
     
     int num_segments = gap.size() - 1;
-    for(int segment=0; segment < num_segments; segment++)
+    for(int segment = 1; segment < num_segments - 1; segment++)
     {
       auto gap_p = gap[segment];
       auto gap_p2 = gap[segment + 1];
@@ -174,6 +176,8 @@ void GapFinderGraph::createGraph(const PoseSE2& start, const PoseSE2& goal, doub
   DepthFirst(graph_,visited,goal_vtx, start.theta(), goal.theta(), start_velocity);
   ROS_INFO_STREAM("Finished depth first search.");
   
+  ros::WallTime endtime = ros::WallTime::now();
+  ROS_INFO_STREAM("creatGraph, gap, total, " << (endtime - starttime).toSec() * 1e3 << "ms");
 }
 
 } //end namespace teb_local_planner

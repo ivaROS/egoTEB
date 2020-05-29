@@ -39,6 +39,7 @@
 #include <teb_local_planner/homotopy_class_planner.h>
 #include <teb_local_planner/gap_finder.h>
 #include <teb_local_planner/teb_validity_checker.h>
+//#include <std_msgs/ColorRGBA.h>
 
 #include <queue>
 #include <limits>
@@ -129,7 +130,12 @@ bool HomotopyClassPlanner::plan(const PoseSE2& start, const PoseSE2& goal, const
   
   // Init new TEBs based on newly explored homotopy classes
   exploreEquivalenceClassesAndInitTebs(start, goal, cfg_->obstacles.min_obstacle_dist, start_vel);
-  visualization_->publishTebContainer(tebs_, "explored");
+  std_msgs::ColorRGBA explored_color;
+  explored_color.a=1.0;
+  explored_color.r=1.0;
+  explored_color.g=.95;
+  explored_color.b=0.16;
+  visualization_->publishTebContainer(tebs_, explored_color, "explored");
   
   // update via-points if activated
   updateReferenceTrajectoryViaPoints(cfg_->hcp.viapoints_all_candidates);

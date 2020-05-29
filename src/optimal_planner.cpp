@@ -185,7 +185,7 @@ bool TebOptimalPlanner::optimizeTEB(int iterations_innerloop, int iterations_out
   
   gap_markers_.markers.clear();
   
-  
+  visualization_msgs::MarkerArray first_markers;
   double weight_multiplier = 1.0;
 
   // TODO(roesmann): we introduced the non-fast mode with the support of dynamic obstacles
@@ -209,6 +209,10 @@ bool TebOptimalPlanner::optimizeTEB(int iterations_innerloop, int iterations_out
         clearGraph();
         return false;
     }
+    if(i == 0)
+    {
+      first_markers = gap_markers_;
+    }
     success = optimizeGraph(iterations_innerloop, false);
     if (!success) 
     {
@@ -224,6 +228,7 @@ bool TebOptimalPlanner::optimizeTEB(int iterations_innerloop, int iterations_out
     
     weight_multiplier *= cfg_->optim.weight_adapt_factor;
   }
+  gap_markers_ = first_markers;
 
   return true;
 }

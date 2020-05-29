@@ -81,7 +81,7 @@
 #include <boost/shared_ptr.hpp>
 
 // custom additions
-#include <egocircle_utils/interface_updater.h>
+#include <teb_local_planner/egocircle_interface_wrapper.h>
 #include <teb_local_planner/egocircle_interface.h>
 
 
@@ -406,7 +406,7 @@ private:
   std::string robot_base_frame_; //!< Used as the base frame id of the robot
   
   std::shared_ptr<EgoCircleInterface> egocircle_;
-  std::shared_ptr<egocircle_utils::InterfaceUpdater> egocircle_wrapper_;
+  std::shared_ptr<teb_local_planner::EgoCircleInterfaceWrapper> egocircle_wrapper_;
     
   // flags
   bool initialized_; //!< Keeps track about the correct initialization of this class

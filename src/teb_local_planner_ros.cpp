@@ -149,8 +149,8 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     // TODO: maybe do this in reconfigureCB if enabled, and deconstruct it if not?
     //if (cfg_.obstacles.include_egocircle_obstacles)
     {
-      egocircle_ = std::make_shared<EgoCircleInterface>(nh, nh);
-      egocircle_wrapper_ = std::make_shared<egocircle_utils::InterfaceUpdater>(egocircle_, nh, nh);
+      egocircle_wrapper_ = std::make_shared<teb_local_planner::EgoCircleInterfaceWrapper>(nh, nh);
+      egocircle_ = egocircle_wrapper_->getImpl();
       egocircle_wrapper_->init();
     }
     

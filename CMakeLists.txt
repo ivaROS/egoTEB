@@ -201,6 +201,7 @@ add_library(teb_local_planner
    src/egocircle_gaps.cpp
    src/gap_intersection.cpp
    src/teb_validity_checker.cpp
+   src/egocircle_interface_wrapper.cpp
    #src/ni_initialization.cpp
 )
 

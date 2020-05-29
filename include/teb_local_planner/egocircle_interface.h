@@ -1,6 +1,7 @@
 #ifndef TEB_LOCAL_PLANNER_EGOCIRCLE_INTERFACE_H
 #define TEB_LOCAL_PLANNER_EGOCIRCLE_INTERFACE_H
 
+#include <pips/collision_testing/transforming_collision_checker.h>
 #include <egocircle_utils/updateable_interface.h>
 #include <egocircle/ego_circle.h>
 #include <egocircle_utils/container.h>
@@ -14,11 +15,12 @@
 
 namespace teb_local_planner
 {
-  class EgoCircleInterface: public egocircle_utils::UpdateableInterface
+  class EgoCircleInterface:  public egocircle_utils::Transformer, public pips::collision_testing::TransformingCollisionChecker, public egocircle_utils::UpdateableInterface
   {
   public:
-    
     EgoCircleInterface(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name=DEFAULT_NAME);
+    
+    bool init();
     
     void setSearchRadius(double radius);
     
@@ -49,6 +51,8 @@ namespace teb_local_planner
     
     std_msgs::Header getCurrentHeader() const;
     
+    virtual void setTransform(const geometry_msgs::TransformStamped& base_optical_transform);
+    
     const egocircle_utils::Inflator* getInflator() const;
     
     static constexpr const char* DEFAULT_NAME="ego_circle_cost_impl";
@@ -64,11 +68,11 @@ namespace teb_local_planner
     std::vector<egocircle_utils::gap_finding::Gap> gaps_;
     std::vector<GlobalGap> global_gaps_;
     
-    std::string name_;    
+    //std::string name_;    
     
     ros::Publisher inflated_egocircle_pub_, decimated_egocircle_pub_, gap_pub_;
     
-    ros::NodeHandle nh_, pnh_;	// For now, separate node handles for base and derived
+    //ros::NodeHandle nh_, pnh_;	// For now, separate node handles for base and derived
     
   };
 } //namespace

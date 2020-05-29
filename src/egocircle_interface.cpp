@@ -7,15 +7,19 @@
 namespace teb_local_planner
 {
 
-    EgoCircleInterface::EgoCircleInterface(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name) :
-      egocircle_utils::UpdateableInterface(nh,pnh,name),
-      name_(name),
-      nh_(nh, name_),
-      pnh_(pnh, name_)
+    EgoCircleInterface::EgoCircleInterface(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name):
+      pips::collision_testing::TransformingCollisionChecker(nh,pnh,name)
+    {
+      init();
+    }
+    
+    bool EgoCircleInterface::init()
     {
       inflated_egocircle_pub_ = pnh_.advertise<sensor_msgs::LaserScan>("inflated_egocircle", 5, true);
       decimated_egocircle_pub_ = pnh_.advertise<visualization_msgs::Marker>("decimated_egocircle", 5, true);
       gap_pub_ = pnh_.advertise<visualization_msgs::MarkerArray>("gaps", 5, true);
+      
+      return true;
     }
     
     void EgoCircleInterface::setSearchRadius(double radius)
@@ -29,7 +33,8 @@ namespace teb_local_planner
     }
     
     void EgoCircleInterface::update(const sensor_msgs::LaserScan::ConstPtr& scan_msg)
-    {            
+    {
+      ros::WallTime starttime = ros::WallTime::now();
       container_ = std::make_shared<egocircle_utils::Container>(scan_msg);
       inflator_ = std::make_shared<egocircle_utils::Inflator>(*container_, inflation_radius_);
       min_dist_ = std::make_shared<egocircle_utils::MinDistanceCalculator>(*container_, search_radius_);
@@ -66,7 +71,7 @@ namespace teb_local_planner
           
           ego_circle::EgoCircularPoint global_point(actual_start_point);
           toGlobal(global_point);
-          //gap_vec.push_back(global_point);
+          gap_vec.push_back(global_point);
         }
         
         for(int segment = 0; segment < num_segments + 1; segment++)
@@ -87,12 +92,13 @@ namespace teb_local_planner
           
           ego_circle::EgoCircularPoint global_point(actual_end_point);
           toGlobal(global_point);
-          //gap_vec.push_back(global_point);
+          gap_vec.push_back(global_point);
         }
         
         global_gaps_.push_back(gap_vec);
       }
-      
+      ros::WallTime endtime = ros::WallTime::now();
+      ROS_INFO_STREAM("egocircle_interface, time, " << (endtime - starttime).toSec() * 1e3 << "ms");
       if(gap_pub_.getNumSubscribers()>0)
       {
         std_msgs::Header global_header;
@@ -157,6 +163,11 @@ namespace teb_local_planner
     CCResult EgoCircleInterface::testCollisionImpl(CollisionChecker::PoseType pose, CCOptions options)
     {
       return getMinDist(ego_circle::EgoCircularPoint(pose.position.x,pose.position.y)) <=0;
+    }
+    
+    void EgoCircleInterface::setTransform(const geometry_msgs::TransformStamped& base_optical_transform)
+    {
+      egocircle_utils::Transformer::setTransform(base_optical_transform);
     }
 
     

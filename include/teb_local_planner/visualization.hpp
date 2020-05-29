@@ -47,7 +47,7 @@ namespace teb_local_planner
 template <typename GraphType>
 void TebVisualization::publishGraph(const GraphType& graph, const std::string& ns_prefix)
 {	 
-  if ( printErrorWhenNotInitialized() || teb_marker_pub_.getNumSubscribers()==0)
+  if ( printErrorWhenNotInitialized() || (teb_marker_pub_.getNumSubscribers()==0 && !always_publish_))
     return;
   
   typedef typename boost::graph_traits<GraphType>::vertex_iterator GraphVertexIterator;
@@ -61,6 +61,7 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
     marker.header.stamp = ros::Time::now();
     marker.ns = ns_prefix + "Edges";
     marker.id = 0;
+    marker.pose.position.z=.01;
   // #define TRIANGLE
   #ifdef TRIANGLE
     marker.type = visualization_msgs::Marker::TRIANGLE_LIST;
@@ -115,7 +116,7 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
     marker.scale.y = 1;
     marker.scale.z = 1;
   #else 
-    marker.scale.x = 0.01;
+    marker.scale.x = 0.02;
   #endif
 //     marker.color.a = 1.0;
 //     marker.color.r = 0.0;
@@ -136,6 +137,7 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
     marker.id = 0;
     marker.type = visualization_msgs::Marker::POINTS;
     marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.position.z=.01;
     
     GraphVertexIterator it_vert, end_vert;
     for (boost::tie(it_vert,end_vert) = boost::vertices(graph); it_vert!=end_vert; ++it_vert)
@@ -152,8 +154,8 @@ void TebVisualization::publishGraph(const GraphType& graph, const std::string& n
       if (it_vert==end_vert-1)
       {
         color.r = 1;
-        color.g = 0;
-        color.b = 0;		
+        color.g = 1;
+        color.b = 1;		
       }
       else
       {

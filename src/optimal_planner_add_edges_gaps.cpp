@@ -25,8 +25,9 @@ void addMarker(visualization_msgs::MarkerArray& markers, const EdgeGap* edge, do
   gap_color.a = .5;
   gap_color.g = 1;
   std_msgs::ColorRGBA pose_color;
-  pose_color.a = .5;
-  pose_color.r = .5;
+  pose_color.a = 1;
+  pose_color.r = .65;
+  pose_color.g = .33;
   
   std_msgs::ColorRGBA border_color;
   border_color.a = .5;
@@ -43,6 +44,8 @@ void addMarker(visualization_msgs::MarkerArray& markers, const EdgeGap* edge, do
   normal_color_r.r = .66;
   normal_color_r.g = .33;
   normal_color_r.b = 1;
+  
+  offset = .4;
 
   
   const Eigen::Vector2d& gap_center = edge->measurement();

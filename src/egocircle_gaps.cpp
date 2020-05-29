@@ -61,7 +61,7 @@ namespace egocircle_utils
       global_gap_marker.scale.x = .03;
       
       std_msgs::ColorRGBA global_gap_color;
-      global_gap_color.a = .5;
+      global_gap_color.a = 1;
       global_gap_color.b = 1;
       
       global_gap_color.g = .5;
@@ -110,7 +110,7 @@ namespace egocircle_utils
       visualization_msgs::Marker collapsed_gap_marker = raw_gap_marker;
       
       std_msgs::ColorRGBA raw_gap_color;
-      raw_gap_color.a = .5;
+      raw_gap_color.a = 1;
       raw_gap_color.b = 1;
       
       addGapsToMarker(raw_gap_marker, raw_gap_color, raw_gaps);
@@ -119,7 +119,7 @@ namespace egocircle_utils
       collapsed_gap_marker.ns = "collapsed_gaps";
       
       std_msgs::ColorRGBA collapsed_gap_color;
-      collapsed_gap_color.a = .5;
+      collapsed_gap_color.a = 1;
       collapsed_gap_color.r = 1;
       collapsed_gap_color.g = .7;
       
@@ -153,10 +153,6 @@ namespace egocircle_utils
       for(int i = 0; i < num_points; ++i)
       {
         PolarPoint polar_point(inflated_depths[i], current_angle);
-        if(polar_point.r<max_r)
-        {
-          polar_point.r+=inscribed_radius;
-        }
         
         current_angle += angle_increment;
         polar_points.push_back(polar_point);
