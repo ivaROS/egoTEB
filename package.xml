@@ -8,9 +8,13 @@
     The underlying method called Timed Elastic Band locally optimizes
     the robot's trajectory with respect to trajectory execution time,
     separation from obstacles and compliance with kinodynamic constraints at runtime.	
+    This is a modified derivative of the original package and includes an implementation of egoTEB.
   </description>
 
+  <!-- Modified package -->
+  <maintainer email="jssmith@gatech.edu">Justin Smith</maintainer>
 
+  <!-- Original package -->
   <maintainer email="christoph.roesmann@tu-dortmund.de">Christoph Rösmann</maintainer>
 
   <license>BSD</license>
