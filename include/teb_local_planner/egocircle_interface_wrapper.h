@@ -14,9 +14,11 @@ namespace teb_local_planner
   public:
     using pips_trajectory_testing::PipsCCWrapper::isReady;
     
-    EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name=DEFAULT_NAME, const tf2_utils::TransformManager& tfm=tf2_utils::TransformManager(false));
+    // EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name=DEFAULT_NAME, const tf2_utils::TransformManager& tfm=tf2_utils::TransformManager(false));
+    EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name=DEFAULT_NAME, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::make_shared<tf2_ros::Buffer>());
     
-    EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const tf2_utils::TransformManager& tfm, const std::string& name=DEFAULT_NAME);
+    // EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const tf2_utils::TransformManager& tfm, const std::string& name=DEFAULT_NAME);
+    EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name=DEFAULT_NAME);
     
     std::shared_ptr<pips::collision_testing::TransformingCollisionChecker> getCC()
     {

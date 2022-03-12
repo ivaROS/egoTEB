@@ -3,17 +3,19 @@
 namespace teb_local_planner
 {
 
-  EgoCircleInterfaceWrapper::EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const tf2_utils::TransformManager& tfm, const std::string& name) :
-    PipsCCWrapper(nh,pnh,name,tfm),
-    InterfaceUpdater(nh, pnh, name, tfm)
+  // EgoCircleInterfaceWrapper::EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const tf2_utils::TransformManager& tfm, const std::string& name) :
+  EgoCircleInterfaceWrapper::EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name) :
+    PipsCCWrapper(nh,pnh,name,tf_buffer),
+    InterfaceUpdater(nh, pnh, tf_buffer, name)
   {
     cc_ = std::make_shared<EgoCircleInterface>(nh, pnh);
     InterfaceUpdater::setInterface(cc_);
   }
 
-  EgoCircleInterfaceWrapper::EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name, const tf2_utils::TransformManager& tfm) :
-    PipsCCWrapper(nh,pnh,name,tfm),
-    InterfaceUpdater(nh, pnh, name, tfm)
+  // EgoCircleInterfaceWrapper::EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name, const tf2_utils::TransformManager& tfm) :
+  EgoCircleInterfaceWrapper::EgoCircleInterfaceWrapper(ros::NodeHandle& nh, ros::NodeHandle& pnh, const std::string& name, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer) :
+    PipsCCWrapper(nh,pnh,name,tf_buffer),
+    InterfaceUpdater(nh, pnh, tf_buffer, name)
   {
     cc_ = std::make_shared<EgoCircleInterface>(nh, pnh);
     InterfaceUpdater::setInterface(cc_);
