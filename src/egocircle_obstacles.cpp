@@ -15,7 +15,8 @@ void TebLocalPlannerROS::updateObstacleContainerWithEgocircle(const ros::Time st
     target_header.frame_id = global_frame_; //global_pose.frame_id_;
     ROS_DEBUG_STREAM("Target Header: " << target_header.frame_id << ", " << target_header.stamp);
     
-    if(egocircle_wrapper_->isReady(target_header))
+    // if(egocircle_wrapper_->isReady(target_header))
+    if(egocircle_wrapper_->isReady())
     {
       egocircle_wrapper_->update();
       

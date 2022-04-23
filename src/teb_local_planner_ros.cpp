@@ -150,7 +150,7 @@ void TebLocalPlannerROS::initialize(std::string name, tf::TransformListener* tf,
     //if (cfg_.obstacles.include_egocircle_obstacles)
     {
       std::shared_ptr<tf2_ros::Buffer> tf_buffer = std::make_shared<tf2_ros::Buffer>(); //optional parameter: ros::Duration(cache time) (default=10) (though it doesn't seem to accept it!)
-      std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer, nh);
+      std::shared_ptr<tf2_ros::TransformListener> tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer);
       egocircle_wrapper_ = std::make_shared<teb_local_planner::EgoCircleInterfaceWrapper>(nh, nh, tf_buffer);
       egocircle_ = egocircle_wrapper_->getImpl();
       egocircle_wrapper_->init();
